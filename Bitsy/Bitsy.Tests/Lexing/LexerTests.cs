@@ -106,6 +106,17 @@ public class LexerTests
             .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("b")
             .And.NextToken.IsOfType(TokenType.Space)
             .And.NextToken.IsOfType(TokenType.End);
+
+    [Test]
+    public void LiteralKeywords() =>
+        WhenCodeIs("return abc as Bit")
+            .Then.NextToken.IsOfType(TokenType.Return)
+            .And.NextToken.IsOfType(TokenType.Space)
+            .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("abc")
+            .And.NextToken.IsOfType(TokenType.Space)
+            .And.NextToken.IsOfType(TokenType.As)
+            .And.NextToken.IsOfType(TokenType.Space)
+            .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("Bit");
     
     private static LexerTestScenario WhenCodeIs(String text)
     {
