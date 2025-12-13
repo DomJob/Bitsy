@@ -86,7 +86,7 @@ public class Lexer
         {
             var initialPos = reader.GetPosition();
             while(IsWhitespace(reader.Peek())) reader.Read();
-            return new Token(TokenType.Space, initialPos, " ");
+            return Next();
         }
 
         if (IsValidIdentifier(literal))
