@@ -14,4 +14,9 @@ public class Token
         Literal = literal;
         Position = position;
     }
+    
+    public override string ToString()
+    {
+        return $"[{Type}, '{Literal}', {Position}]";
+    }
 }

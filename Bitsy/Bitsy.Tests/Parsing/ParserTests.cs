@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
 using Bitsy.Lexing;
+using Bitsy.Parsing.Expressions;
 using Bitsy.Reading;
 
 namespace Bitsy.Parsing;
 
-public class ParsingTests
+public class ParserTests
 {
     [Test]
     public void SingleIdentifierExpression()
@@ -256,6 +256,70 @@ public class ParsingTests
         var expression = ParseExpression(code);
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a ? b : c) ? d : e)"));
+    }
+
+    [Test]
+    public void DotExpression_Simple()
+    {
+        var code = "element.attribute";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<DotExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("(element.attribute)"));
+    }
+    
+    [Test]
+    public void DotExpression_InInfixExpr()
+    {
+        var code = "a & element.attribute";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<InfixExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("(a & (element.attribute))"));
+    }
+    
+    [Test]
+    public void DotExpression_Two_InInfixExpr()
+    {
+        var code = "integer.b1 & integer.b2";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<InfixExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("((integer.b1) & (integer.b2))"));
+    }
+    
+    [Test]
+    public void DotExpression_InConditional()
+    {
+        var code = "integer.b1 ? a.b : c.d";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("((integer.b1) ? (a.b) : (c.d))"));
+    }
+    
+    [Test]
+    public void DotExpression_chained()
+    {
+        var code = "anObject.attribute.next";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<DotExpression>());
+        Assert.That(((DotExpression)expression).Attribute.Identifier.Literal, Is.EqualTo("next"));
+        Assert.That(expression.ToString(), Is.EqualTo("((anObject.attribute).next)"));
+    }
+    
+    [Test]
+    public void DotExpression_Negated()
+    {
+        var code = "~element.attribute";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<PrefixExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("~(element.attribute)"));
+    }
+    
+    [Test]
+    public void DotExpression_TargetIsFunctionCall()
+    {
+        var code = "(someFunc(a,b)).attribute";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<DotExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("(someFunc(a,b).attribute)"));
     }
 
     [Test]

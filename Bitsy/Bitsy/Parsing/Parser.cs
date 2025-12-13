@@ -1,4 +1,5 @@
 using Bitsy.Lexing;
+using Bitsy.Parsing.Expressions;
 
 namespace Bitsy.Parsing;
 
@@ -46,6 +47,18 @@ public class Parser
                 Next(); // consume ':'
                 var whenFalse = ParseExpression(0, possibleEnds);
                 left = new ConditionalExpression(left, whenTrue, whenFalse);
+            }
+            else if (op.Type == TokenType.Dot)
+            {
+                var (leftBp, _) = InfixBindingPower(op);
+                if (leftBp < minBindingPower) break;
+                
+                Next(); // consume '.'
+                var attribute = Next(); // Consume identifier
+                if (attribute.Type != TokenType.Identifier)
+                    throw new ParserException("Expected identifier");
+
+                left = new DotExpression(left, new IdentifierExpression(attribute));
             }
             else
             {

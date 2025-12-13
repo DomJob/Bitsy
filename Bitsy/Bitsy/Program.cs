@@ -1,4 +1,5 @@
 ﻿using Bitsy.Lexing;
+using Bitsy.Parsing;
 using Bitsy.Reading;
 
 namespace Bitsy;
@@ -12,14 +13,21 @@ public static class Program
             Console.Write(">>> ");
             string code = Console.ReadLine() ?? "";
 
-            var lexer = new Lexer(new StringCodeReader(code));
-            while (true)
-            {
-                var token = lexer.Next();
-                Console.WriteLine($"[{token.Type}, \"{token.Literal}\"]");
+            var reader = new StringCodeReader(code);
+            var lexer = new Lexer(reader);
+            var parser = new Parser(lexer);
 
-                if (token.Type == TokenType.End) break;
+            try
+            {
+                var expression = parser.ParseExpression();
+                Console.WriteLine(expression.ToString());
+                Console.WriteLine(expression.Details());
             }
+            catch (ParserException e)
+            {
+                Console.WriteLine($"Parsing error: {e.Message} - {e.Token}");
+            }
+            
         }
     }
 }
