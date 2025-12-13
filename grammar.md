@@ -7,8 +7,12 @@ TypeStatement :=
     Identifier
     TypeTemplate?
     LeftBrace
-        Identifier Identifier
+        TypeDefinition
     RightBrace
+
+TypeDefinition :=
+    Identifier Identifier
+    TypeDefinition?
 
 TypeTemplate :=
     LeftAngle
