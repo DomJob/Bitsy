@@ -2,14 +2,16 @@ namespace Bitsy.Lexing;
 
 public enum TokenType
 {
-    Identifier, Assignment,
+    Identifier,
     LeftParenthesis, RightParenthesis,  // ()
+
+    Assignment,
     LeftBracket, RightBracket,          // []
     LeftBrace, RightBrace,              // {}
     LeftAngle, RightAngle,              // <>
     Comma, Dot, Arrow,                  // , . ->
     Return, As,                         // Only textual keywords
     And, Or, Xor, Not,                  // Bit operations
-    Equality, Question, Colon,          // Conditional branching
+    Question, Colon,                    // Conditional branching
     Illegal, End,                       // Meta
 }

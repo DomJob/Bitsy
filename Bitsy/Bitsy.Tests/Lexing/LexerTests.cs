@@ -94,9 +94,9 @@ public class LexerTests
             .And.NextToken.IsOfType(TokenType.As)
             .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("Bit");
     
-    private static LexerTestScenario WhenCodeIs(String text)
+    private static LexerTestScenario WhenCodeIs(String code)
     {
-        var reader = new StringCodeReader(text);
+        var reader = new StringCodeReader(code);
         return new LexerTestScenario(new Lexer(reader));
     }
     

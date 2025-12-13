@@ -35,17 +35,11 @@ public class Lexer
             case '~': type = TokenType.Not; break;
             case '.': type = TokenType.Dot; break;
             case ',': type = TokenType.Comma; break;
+            case '=': type = TokenType.Assignment; break;
             case '?': type = TokenType.Question; break;
             case ':': type = TokenType.Colon; break;
         }
         if(type != TokenType.Illegal) return new Token(type, reader.GetPosition(), literal.ToString());
-
-        if (literal == '=')
-        {
-            if (reader.Peek() != '=') return new Token(TokenType.Assignment, reader.GetPosition(), "=");
-            reader.Read();
-            return new Token(TokenType.Equality, reader.GetPosition(), "==");
-        }
 
         if (literal == '-' && reader.Peek() == '>')
         {

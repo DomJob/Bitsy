@@ -1,5 +1,11 @@
 # Bitsy grammar
 
+```
+Program :=
+    TypeStatement
+    Assign
+```
+
 ## Type statement
 
 ```
@@ -23,3 +29,4 @@ TemplateArguments :=
     Identifier
     (Comma TemplateArguments)?
 ```
+
