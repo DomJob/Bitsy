@@ -2,9 +2,12 @@ namespace Bitsy.Reading;
 
 public class Position
 {
-    public String FileName;
-    public int Line;
     public int Column;
-    
-    public override string ToString() => $"in {FileName} - {Line}:{Column}";
+    public string FileName;
+    public int Line;
+
+    public override string ToString()
+    {
+        return $"in {FileName} - {Line}:{Column}";
+    }
 }

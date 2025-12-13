@@ -2,7 +2,10 @@ namespace Bitsy.Reading;
 
 public class Reader
 {
-    private Stack<Position> positions = new Stack<Position>();
+    private readonly Stack<Position> positions = new();
 
-    public Position GetPosition() => positions.Peek();
+    public Position GetPosition()
+    {
+        return positions.Peek();
+    }
 }

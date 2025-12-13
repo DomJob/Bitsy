@@ -14,7 +14,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<IdentifierExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc"));
     }
-    
+
     [Test]
     public void SingleBinaryExpression()
     {
@@ -23,7 +23,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a & b)"));
     }
-    
+
     [Test]
     public void UnaryExpression()
     {
@@ -32,7 +32,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<PrefixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("~a"));
     }
-    
+
     [Test]
     public void AssociativeAnd()
     {
@@ -41,7 +41,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a & b) & c)"));
     }
-    
+
     [Test]
     public void AndOr()
     {
@@ -50,7 +50,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a & b) | c)"));
     }
-    
+
     [Test]
     public void OrAnd()
     {
@@ -59,7 +59,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a | (b & c))"));
     }
-    
+
     [Test]
     public void OrAnd_WithForcedPrecedence()
     {
@@ -68,7 +68,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a | b) & c)"));
     }
-    
+
     [Test]
     public void CallExpression_NoParams()
     {
@@ -77,7 +77,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc()"));
     }
-    
+
     [Test]
     public void CallExpression_OneParam()
     {
@@ -86,7 +86,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc(def)"));
     }
-    
+
     [Test]
     public void CallExpression_TwoParams()
     {
@@ -95,7 +95,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc(def, ghi)"));
     }
-    
+
     [Test]
     public void CallExpression_ThreeParams_WeirdSpacing()
     {
@@ -104,7 +104,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc(def, ghi, jkl)"));
     }
-    
+
     [Test]
     public void NegationOnParenthesisExpression()
     {
@@ -113,7 +113,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<PrefixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("~(a & b)"));
     }
-    
+
     [Test]
     public void CallExpression_OneExpressionParam()
     {
@@ -122,7 +122,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("abc((def ^ 1))"));
     }
-    
+
     [Test]
     public void ObjectExpression_OneElement()
     {
@@ -131,7 +131,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ObjectExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("[abc]"));
     }
-    
+
     [Test]
     public void ObjectExpression_TwoElement()
     {
@@ -149,7 +149,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ObjectExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("[abc, (a & b), def]"));
     }
-    
+
     [Test]
     public void ObjectExpression_WithInnerFunctionCall()
     {
@@ -158,7 +158,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ObjectExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("[abc, (a & b), def(1, 0, 1)]"));
     }
-    
+
     [Test]
     public void CallExpression_WithInnerObject()
     {
@@ -167,7 +167,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("hello([abc, (a & b), def(1, 0, 1)])"));
     }
-    
+
     [Test]
     public void NegateObject_ForSomeReason()
     {
@@ -185,7 +185,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a ? b : c)"));
     }
-    
+
     [Test]
     public void NegateConditionalExpression_Condition()
     {
@@ -194,7 +194,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(~a ? b : c)"));
     }
-    
+
     [Test]
     public void NegateConditionalExpression_WhenTrue()
     {
@@ -203,7 +203,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a ? ~b : c)"));
     }
-    
+
     [Test]
     public void NegateConditionalExpression_WhenFalse()
     {
@@ -212,7 +212,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a ? b : ~c)"));
     }
-    
+
     [Test]
     public void ConditionalExpression_AsArgument()
     {
@@ -221,7 +221,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("func((a ? b : c))"));
     }
-    
+
     [Test]
     public void ConditionalExpression_AsTwoArguments()
     {
@@ -230,7 +230,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<CallExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("func((a ? b : c), (d ? e : f))"));
     }
-    
+
     [Test]
     public void ConditionalExpression_AsObject()
     {
@@ -239,7 +239,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ObjectExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("[(a ? b : c), (d ? e : f)]"));
     }
-    
+
     [Test]
     public void ChainedConditionalExpression()
     {
@@ -248,7 +248,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a ? b : (c ? d : e))"));
     }
-    
+
     [Test]
     public void ChainedConditionalExpression_Inversed()
     {
@@ -266,7 +266,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<DotExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(element.attribute)"));
     }
-    
+
     [Test]
     public void DotExpression_InInfixExpr()
     {
@@ -275,7 +275,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(a & (element.attribute))"));
     }
-    
+
     [Test]
     public void DotExpression_Two_InInfixExpr()
     {
@@ -284,7 +284,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((integer.b1) & (integer.b2))"));
     }
-    
+
     [Test]
     public void DotExpression_InConditional()
     {
@@ -293,7 +293,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((integer.b1) ? (a.b) : (c.d))"));
     }
-    
+
     [Test]
     public void DotExpression_chained()
     {
@@ -303,7 +303,7 @@ public class ParserTests
         Assert.That(((DotExpression)expression).Attribute.Identifier.Literal, Is.EqualTo("next"));
         Assert.That(expression.ToString(), Is.EqualTo("((anObject.attribute).next)"));
     }
-    
+
     [Test]
     public void DotExpression_Negated()
     {
@@ -312,7 +312,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<PrefixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("~(element.attribute)"));
     }
-    
+
     [Test]
     public void DotExpression_TargetIsFunctionCall()
     {
@@ -336,7 +336,7 @@ public class ParserTests
             Assert.Pass();
         }
     }
-    
+
     [Test]
     public void UnhappyPath_MissingBracket()
     {
@@ -351,7 +351,7 @@ public class ParserTests
             Assert.Pass();
         }
     }
-    
+
     [Test]
     public void UnhappyPath_BrokenConditional()
     {
@@ -366,7 +366,7 @@ public class ParserTests
             Assert.Pass();
         }
     }
-    
+
     private Expression ParseExpression(string code)
     {
         var reader = new StringCodeReader(code);

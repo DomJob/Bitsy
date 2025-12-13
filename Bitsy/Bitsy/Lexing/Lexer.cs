@@ -5,8 +5,8 @@ namespace Bitsy.Lexing;
 public class Lexer
 {
     private readonly IReader reader;
-    private Token? peeked = null;
-    
+    private Token? peeked;
+
     public Lexer(IReader reader)
     {
         this.reader = reader;
@@ -20,12 +20,13 @@ public class Lexer
             peeked = null;
             return token;
         }
+
         if (!reader.HasMore()) return new Token(TokenType.End, reader.GetPosition());
 
         var literal = reader.Read();
-        
-        TokenType type = TokenType.Illegal;
-        
+
+        var type = TokenType.Illegal;
+
         switch (literal)
         {
             case '{': type = TokenType.LeftBrace; break;
@@ -46,7 +47,8 @@ public class Lexer
             case '?': type = TokenType.Question; break;
             case ':': type = TokenType.Colon; break;
         }
-        if(type != TokenType.Illegal) return new Token(type, reader.GetPosition(), literal.ToString());
+
+        if (type != TokenType.Illegal) return new Token(type, reader.GetPosition(), literal.ToString());
 
         if (literal == '-' && reader.Peek() == '>')
         {
@@ -66,8 +68,8 @@ public class Lexer
                     reader.Read();
                     return Next();
                 }
-                
-                if (c=='\0') return new Token(TokenType.Illegal, reader.GetPosition(), literal.ToString());
+
+                if (c == '\0') return new Token(TokenType.Illegal, reader.GetPosition(), literal.ToString());
             }
         }
 
@@ -86,18 +88,15 @@ public class Lexer
         if (IsWhitespace(literal))
         {
             var initialPos = reader.GetPosition();
-            while(IsWhitespace(reader.Peek())) reader.Read();
+            while (IsWhitespace(reader.Peek())) reader.Read();
             return Next();
         }
 
         if (IsValidIdentifier(literal))
         {
             var initialPos = reader.GetPosition();
-            String identifier = literal.ToString();
-            while (IsValidIdentifier(reader.Peek()))
-            {
-                identifier += reader.Read();
-            }
+            var identifier = literal.ToString();
+            while (IsValidIdentifier(reader.Peek())) identifier += reader.Read();
 
             return identifier.ToLower() switch
             {
@@ -106,7 +105,7 @@ public class Lexer
                 _ => new Token(TokenType.Identifier, initialPos, identifier)
             };
         }
-        
+
         return new Token(TokenType.Illegal, reader.GetPosition(), literal.ToString());
     }
 
@@ -122,7 +121,7 @@ public class Lexer
 
     public Token Peek()
     {
-        if(peeked == null) peeked = Next();
+        if (peeked == null) peeked = Next();
         return peeked;
     }
 }

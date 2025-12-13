@@ -7,17 +7,24 @@ public class Parser
 {
     private readonly Lexer lexer;
 
-    private Token Peek() => lexer.Peek();
-    private Token Next() => lexer.Next();
-
     public Parser(Lexer lexer)
     {
         this.lexer = lexer;
     }
-    
+
+    private Token Peek()
+    {
+        return lexer.Peek();
+    }
+
+    private Token Next()
+    {
+        return lexer.Next();
+    }
+
     public Expression ParseExpression(int minBindingPower = 0, List<TokenType>? possibleEnds = null)
     {
-        if(possibleEnds is null) possibleEnds = [TokenType.End];
+        if (possibleEnds is null) possibleEnds = [TokenType.End];
 
         var token = Next();
         var left = ParsePrefix(token, possibleEnds);
@@ -31,7 +38,7 @@ public class Parser
             {
                 var (leftBp, _) = InfixBindingPower(op);
                 if (leftBp < minBindingPower) break;
-            
+
                 Next(); // consume '('
                 var args = ParseExpressions(TokenType.RightParenthesis);
                 Next(); // consume ')'
@@ -41,7 +48,7 @@ public class Parser
             {
                 var (leftBp, _) = InfixBindingPower(op);
                 if (leftBp < minBindingPower) break;
-                
+
                 Next(); // consume '?'
                 var whenTrue = ParseExpression(0, [TokenType.Colon]);
                 Next(); // consume ':'
@@ -52,7 +59,7 @@ public class Parser
             {
                 var (leftBp, _) = InfixBindingPower(op);
                 if (leftBp < minBindingPower) break;
-                
+
                 Next(); // consume '.'
                 var attribute = Next(); // Consume identifier
                 if (attribute.Type != TokenType.Identifier)
@@ -64,7 +71,7 @@ public class Parser
             {
                 var (leftBp, rightBp) = InfixBindingPower(op);
                 if (leftBp < minBindingPower) break;
-        
+
                 Next();
                 var right = ParseExpression(rightBp, possibleEnds);
                 left = new InfixExpression(left, op, right);
@@ -72,6 +79,7 @@ public class Parser
 
             //throw new ParserException($"Unexpected token. Expected one of {string.Join(", ",possibleEnds)}", token);
         }
+
         return left;
     }
 
@@ -86,6 +94,7 @@ public class Parser
             case TokenType.Or: return (8, 9);
             case TokenType.Question: return (7, 6);
         }
+
         throw new ParserException("Expected InfixOperator token", operation);
     }
 
@@ -97,7 +106,7 @@ public class Parser
             var operand = ParseExpression(bp, possibleEnds);
             return new PrefixExpression(token, operand);
         }
-        
+
         if (token.Type == TokenType.LeftParenthesis)
         {
             var expr = ParseExpression(0, [TokenType.RightParenthesis]);
@@ -114,25 +123,25 @@ public class Parser
 
         if (token.Type != TokenType.Identifier)
             throw new ParserException("Expected identifier", token);
-    
-        return new IdentifierExpression(token); 
+
+        return new IdentifierExpression(token);
     }
-    
+
     private List<Expression> ParseExpressions(TokenType endSignal)
     {
         var args = new List<Expression>();
-    
+
         if (Peek().Type == endSignal)
             return args;
-    
+
         args.Add(ParseExpression(0, [endSignal, TokenType.Comma]));
-    
+
         while (Peek().Type == TokenType.Comma)
         {
             Next(); // consume ','
             args.Add(ParseExpression(0, [endSignal, TokenType.Comma]));
         }
-    
+
         return args;
     }
 
@@ -150,8 +159,6 @@ public class Parser
 
 public class ParserException : Exception
 {
-    public string Message { get; }
-    public Token? Token { get; }
     public ParserException(string message, Token token)
     {
         Message = message;
@@ -162,4 +169,7 @@ public class ParserException : Exception
     {
         Message = message;
     }
+
+    public string Message { get; }
+    public Token? Token { get; }
 }

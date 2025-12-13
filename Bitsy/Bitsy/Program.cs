@@ -8,10 +8,10 @@ public static class Program
 {
     public static void Main()
     {
-        while(true)
+        while (true)
         {
             Console.Write(">>> ");
-            string code = Console.ReadLine() ?? "";
+            var code = Console.ReadLine() ?? "";
 
             var reader = new StringCodeReader(code);
             var lexer = new Lexer(reader);
@@ -27,7 +27,6 @@ public static class Program
             {
                 Console.WriteLine($"Parsing error: {e.Message} - {e.Token}");
             }
-            
         }
     }
 }

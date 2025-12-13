@@ -3,9 +3,9 @@ namespace Bitsy.Reading;
 public class StringCodeReader : IReader
 {
     private readonly string text;
-    private int cursor = 0;
-    private int line = 1;
     private int column = 1;
+    private int cursor;
+    private int line = 1;
 
     public StringCodeReader(string text)
     {
@@ -27,17 +27,20 @@ public class StringCodeReader : IReader
             line++;
             column = 0;
         }
-        
+
         column++;
         cursor++;
         return ch;
     }
-    
-    public char Peek() => cursor >= text.Length ? '\0' : text[cursor];
+
+    public char Peek()
+    {
+        return cursor >= text.Length ? '\0' : text[cursor];
+    }
 
     public Position GetPosition()
     {
-        return new Position()
+        return new Position
         {
             Column = column,
             Line = line,
