@@ -305,22 +305,8 @@ public class ParsingTests
     
     private Expression ParseExpression(string code)
     {
-        var tokens = GetTokens(code);
-        return new Parser().ParseExpression(tokens);
-    }
-    
-    private Queue<Token> GetTokens(string code)
-    {
-        var tokens = new List<Token>();
-        var lexer = new Lexer(new StringCodeReader(code));
-
-        while (true)
-        {
-            var token = lexer.Next();
-            tokens.Add(token);
-            if (token.Type == TokenType.End) break;
-        }
-        
-        return new Queue<Token>(tokens);
+        var reader = new StringCodeReader(code);
+        var lexer = new Lexer(reader);
+        return new Parser(lexer).ParseExpression();
     }
 }

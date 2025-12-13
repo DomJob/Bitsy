@@ -5,6 +5,7 @@ namespace Bitsy.Lexing;
 public class Lexer
 {
     private readonly IReader reader;
+    private Token? peeked = null;
     
     public Lexer(IReader reader)
     {
@@ -13,6 +14,12 @@ public class Lexer
 
     public Token Next()
     {
+        if (peeked != null)
+        {
+            var token = peeked;
+            peeked = null;
+            return token;
+        }
         if (!reader.HasMore()) return new Token(TokenType.End, reader.GetPosition());
 
         var literal = reader.Read();
@@ -111,5 +118,11 @@ public class Lexer
     private bool IsValidIdentifier(char c)
     {
         return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+    }
+
+    public Token Peek()
+    {
+        if(peeked == null) peeked = Next();
+        return peeked;
     }
 }
