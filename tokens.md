@@ -1,31 +1,21 @@
 # Bitsy tokens
 
-24 tokens:
-
 ```
-literal
+Identifer
 =
 
-( )
-{ }
-< >
+( ) { }
+< > [ ]
 
-,
+, .
 ->
 return
 as
 
-and
-or
-not
-
-~ & |
+~ & ^ |
 
 ==
 
 ? :
-
-//
-/*  */
 
 ```

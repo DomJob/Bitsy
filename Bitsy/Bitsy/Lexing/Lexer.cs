@@ -32,6 +32,7 @@ public class Lexer
             case '^': type = TokenType.Xor; break;
             case '&': type = TokenType.And; break;
             case '|': type = TokenType.Or; break;
+            case '~': type = TokenType.Not; break;
             case '.': type = TokenType.Dot; break;
             case ',': type = TokenType.Comma; break;
             case '?': type = TokenType.Question; break;
