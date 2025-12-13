@@ -1,0 +1,43 @@
+/* aint no if-else keyword, gotta DIY */
+
+Bool<T> {
+    ()->T true
+    ()->T false
+}
+
+
+
+ifFunction<T>(Bit condition, ()->T ifTrue, ()->T ifFalse) {
+    return condition(ifTrue, ifFalse)()
+
+    if(condition) {
+        return ifTrue()
+    } else {
+        return ifFalse()
+    }
+}
+
+
+
+() { return {1,0,0,1} }
+() { return {0,1,1,0} }
+
+retVal = condition ? {1,0,0,1} : {0,1,1,0}
+
+
+
+main(Bits input) {
+    condition = input as Bit
+
+    
+
+    retval = if(condition) {
+        return {1,0,0,1}
+    } else {
+        return {0,1,1,0}
+    }
+
+
+
+    return retval
+}

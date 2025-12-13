@@ -1,0 +1,16 @@
+// Hello world - Ignores input, outputs a bit stream equivalent to ASCII "Hello, World!"
+// No helper types, only outputs
+
+main(Bits input) { 
+    H = {0, 1, 0, 0, 1, 0, 0, 0}
+    e = {0, 1, 1, 0, 0, 1, 0, 1}
+    l = {0, 1, 1, 0, 1, 1, 0, 0}
+    o = {0, 1, 1, 0, 1, 1, 1, 1}
+    space = {0, 0, 1, 0, 0, 0, 0, 0}
+    W = {0, 1, 0, 1, 0, 1, 1, 1}
+    r = {0, 1, 1, 1, 0, 0, 1, 0}
+    d = {0, 1, 1, 0, 0, 1, 0, 0}
+    exclamation = {0, 0, 1, 0, 0, 0, 0, 1}
+
+    return {H, e, l, l, o, space, W, o, r, l, d, exclamation}
+}
