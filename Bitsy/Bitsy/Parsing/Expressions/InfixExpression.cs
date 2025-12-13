@@ -19,11 +19,4 @@ public class InfixExpression : Expression
     {
         return $"({Left} {Operation.Literal} {Right})";
     }
-
-    public override string Details(int indent = 0)
-    {
-        var tab = new string(' ', indent);
-        return
-            $"{tab}[Infix: {Operation.Literal}\n{tab + ' '}Left: {Left.Details(indent + 1)}\n{tab + ' '}Right: {Right.Details(indent + 1)}\n{tab}]";
-    }
 }

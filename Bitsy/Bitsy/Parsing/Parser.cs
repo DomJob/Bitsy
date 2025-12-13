@@ -67,6 +67,18 @@ public class Parser
 
                 left = new DotExpression(left, new IdentifierExpression(attribute));
             }
+            else if (op.Type == TokenType.As)
+            {
+                var (leftBp, _) = InfixBindingPower(op);
+                if (leftBp < minBindingPower) break;
+
+                Next(); // consume 'as'
+                var attribute = Next(); // Consume identifier
+                if (attribute.Type != TokenType.Identifier)
+                    throw new ParserException("Expected identifier");
+
+                left = new AsExpression(left, new IdentifierExpression(attribute));
+            }
             else
             {
                 var (leftBp, rightBp) = InfixBindingPower(op);
@@ -87,6 +99,7 @@ public class Parser
     {
         switch (operation.Type)
         {
+            case TokenType.As: return (18, 19);
             case TokenType.LeftParenthesis: return (16, 17);
             case TokenType.Dot: return (14, 15);
             case TokenType.And: return (12, 13);

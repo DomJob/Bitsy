@@ -17,10 +17,4 @@ public class PrefixExpression : Expression
     {
         return $"{Operation.Literal}{Expression}";
     }
-
-    public override string Details(int indent = 0)
-    {
-        var tab = new string(' ', indent);
-        return $"{tab}[Prefix: {Operation.Literal}\n{tab}{Expression.Details(indent + 1)}\n{tab}]";
-    }
 }

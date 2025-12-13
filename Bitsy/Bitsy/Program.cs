@@ -21,7 +21,6 @@ public static class Program
             {
                 var expression = parser.ParseExpression();
                 Console.WriteLine(expression.ToString());
-                Console.WriteLine(expression.Details());
             }
             catch (ParserException e)
             {

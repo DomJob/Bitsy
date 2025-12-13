@@ -15,10 +15,4 @@ public class DotExpression : Expression
     {
         return $"({Object}.{Attribute})";
     }
-
-    public override string Details(int indent = 0)
-    {
-        var tab = new string(' ', indent);
-        return $"{tab}[Dot\n{tab + ' '}{Object.Details(indent + 1)}\n{tab + ' '}{Attribute.Details(indent + 1)}]";
-    }
 }

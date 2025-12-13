@@ -257,6 +257,42 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a ? b : c) ? d : e)"));
     }
+    
+    [Test]
+    public void AsExpression_Simple()
+    {
+        var code = "abc as SomeType";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<AsExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("(abc as SomeType)"));
+    }
+    
+    [Test]
+    public void AsExpression_InInfix()
+    {
+        var code = "abc as Bit ^ other";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<InfixExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("((abc as Bit) ^ other)"));
+    }
+    
+    [Test]
+    public void AsExpression_InInfix2()
+    {
+        var code = "other ^ abc as Bit";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<InfixExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("(other ^ (abc as Bit))"));
+    }
+
+    [Test]
+    public void AsExpression_Chained()
+    {
+        var code = "abc as SomeType as OtherType";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<AsExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("((abc as SomeType) as OtherType)"));
+    }
 
     [Test]
     public void DotExpression_Simple()
@@ -319,7 +355,7 @@ public class ParserTests
         var code = "(someFunc(a,b)).attribute";
         var expression = ParseExpression(code);
         Assert.That(expression, Is.InstanceOf<DotExpression>());
-        Assert.That(expression.ToString(), Is.EqualTo("(someFunc(a,b).attribute)"));
+        Assert.That(expression.ToString(), Is.EqualTo("(someFunc(a, b).attribute)"));
     }
 
     [Test]

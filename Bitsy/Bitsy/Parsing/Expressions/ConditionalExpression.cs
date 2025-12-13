@@ -17,15 +17,4 @@ public class ConditionalExpression : Expression
     {
         return $"({Condition} ? {WhenTrue} : {WhenFalse})";
     }
-
-    public override string Details(int indent = 0)
-    {
-        var tab = new string(' ', indent);
-
-        return $"{tab}[Conditional\n" +
-               $"{Condition.Details(indent + 1)}\n" +
-               $"{WhenTrue.Details(indent + 1)}\n" +
-               $"{WhenFalse.Details(indent + 1)}\n" +
-               $"{tab}]";
-    }
 }

@@ -15,9 +15,4 @@ public class IdentifierExpression : Expression
     {
         return Identifier.Literal;
     }
-
-    public override string Details(int indent = 0)
-    {
-        return $"Id({Identifier.Literal})";
-    }
 }
