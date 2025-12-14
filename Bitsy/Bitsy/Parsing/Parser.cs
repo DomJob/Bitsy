@@ -55,38 +55,33 @@ public class Parser
                 var whenFalse = ParseExpression(0, possibleEnds);
                 left = new ConditionalExpression(left, whenTrue, whenFalse);
             }
-            else if (op.Type == TokenType.Dot)
-            {
-                var (leftBp, _) = InfixBindingPower(op);
-                if (leftBp < minBindingPower) break;
-
-                Next(); // consume '.'
-                var attribute = Next(); // Consume identifier
-                if (attribute.Type != TokenType.Identifier)
-                    throw new ParserException("Expected identifier");
-
-                left = new DotExpression(left, new IdentifierExpression(attribute));
-            }
-            else if (op.Type == TokenType.As)
-            {
-                var (leftBp, _) = InfixBindingPower(op);
-                if (leftBp < minBindingPower) break;
-
-                Next(); // consume 'as'
-                var attribute = Next(); // Consume identifier
-                if (attribute.Type != TokenType.Identifier)
-                    throw new ParserException("Expected identifier");
-
-                left = new AsExpression(left, new IdentifierExpression(attribute));
-            }
             else
             {
                 var (leftBp, rightBp) = InfixBindingPower(op);
                 if (leftBp < minBindingPower) break;
 
-                Next();
-                var right = ParseExpression(rightBp, possibleEnds);
-                left = new InfixExpression(left, op, right);
+                Next(); // Consume op
+
+                if (op.Type == TokenType.As)
+                {
+                    var identifier = Next();
+                    if (identifier.Type != TokenType.Identifier)
+                        throw new ParserException("Expected identifier", identifier);
+
+                    left = new AsExpression(left, new IdentifierExpression(identifier));
+                }
+                else if (op.Type == TokenType.Dot)
+                {
+                    var identifier = Next();
+                    if (identifier.Type != TokenType.Identifier)
+                        throw new ParserException("Expected identifier", identifier);
+
+                    left = new DotExpression(left, new IdentifierExpression(identifier));
+                }
+                else
+                {
+                    left = new InfixExpression(left, op, ParseExpression(rightBp, possibleEnds));
+                }
             }
 
             //throw new ParserException($"Unexpected token. Expected one of {string.Join(", ",possibleEnds)}", token);
@@ -99,7 +94,7 @@ public class Parser
     {
         switch (operation.Type)
         {
-            case TokenType.As: return (18, 19);
+            case TokenType.As: return (1, 2);
             case TokenType.LeftParenthesis: return (16, 17);
             case TokenType.Dot: return (14, 15);
             case TokenType.And: return (12, 13);

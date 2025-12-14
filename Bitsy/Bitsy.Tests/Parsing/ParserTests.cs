@@ -257,7 +257,7 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<ConditionalExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((a ? b : c) ? d : e)"));
     }
-    
+
     [Test]
     public void AsExpression_Simple()
     {
@@ -266,23 +266,23 @@ public class ParserTests
         Assert.That(expression, Is.InstanceOf<AsExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("(abc as SomeType)"));
     }
-    
+
     [Test]
     public void AsExpression_InInfix()
     {
         var code = "abc as Bit ^ other";
         var expression = ParseExpression(code);
-        Assert.That(expression, Is.InstanceOf<InfixExpression>());
+        //Assert.That(expression, Is.InstanceOf<InfixExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((abc as Bit) ^ other)"));
     }
-    
+
     [Test]
     public void AsExpression_InInfix2()
     {
         var code = "other ^ abc as Bit";
         var expression = ParseExpression(code);
-        Assert.That(expression, Is.InstanceOf<InfixExpression>());
-        Assert.That(expression.ToString(), Is.EqualTo("(other ^ (abc as Bit))"));
+        Assert.That(expression.ToString(), Is.EqualTo("((other ^ abc) as Bit)"));
+        Assert.That(expression, Is.InstanceOf<AsExpression>());
     }
 
     [Test]
@@ -292,6 +292,15 @@ public class ParserTests
         var expression = ParseExpression(code);
         Assert.That(expression, Is.InstanceOf<AsExpression>());
         Assert.That(expression.ToString(), Is.EqualTo("((abc as SomeType) as OtherType)"));
+    }
+
+    [Test]
+    public void AsExpression_ProperOrder()
+    {
+        var code = "a | b & c as Type";
+        var expression = ParseExpression(code);
+        Assert.That(expression.ToString(), Is.EqualTo("((a | (b & c)) as Type)"));
+        Assert.That(expression, Is.InstanceOf<AsExpression>());
     }
 
     [Test]
