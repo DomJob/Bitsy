@@ -44,17 +44,6 @@ public class Parser
                 Next(); // consume ')'
                 left = new CallExpression(left, args);
             }
-            else if (op.Type == TokenType.Question)
-            {
-                var (leftBp, _) = InfixBindingPower(op);
-                if (leftBp < minBindingPower) break;
-
-                Next(); // consume '?'
-                var whenTrue = ParseExpression(0, [TokenType.Colon]);
-                Next(); // consume ':'
-                var whenFalse = ParseExpression(0, possibleEnds);
-                left = new ConditionalExpression(left, whenTrue, whenFalse);
-            }
             else
             {
                 var (leftBp, rightBp) = InfixBindingPower(op);
@@ -78,6 +67,13 @@ public class Parser
 
                     left = new DotExpression(left, new IdentifierExpression(identifier));
                 }
+                else if (op.Type == TokenType.Question)
+                {
+                    var whenTrue = ParseExpression(rightBp, [TokenType.Colon]);
+                    Next(); // consume ':'
+                    var whenFalse = ParseExpression(rightBp, possibleEnds);
+                    left = new ConditionalExpression(left, whenTrue, whenFalse);
+                }
                 else
                 {
                     left = new InfixExpression(left, op, ParseExpression(rightBp, possibleEnds));
@@ -94,13 +90,13 @@ public class Parser
     {
         switch (operation.Type)
         {
-            case TokenType.As: return (1, 2);
-            case TokenType.LeftParenthesis: return (16, 17);
-            case TokenType.Dot: return (14, 15);
-            case TokenType.And: return (12, 13);
-            case TokenType.Xor: return (10, 11);
-            case TokenType.Or: return (8, 9);
-            case TokenType.Question: return (7, 6);
+            case TokenType.LeftParenthesis: return (18, 19); // function calls - highest
+            case TokenType.Dot: return (16, 17);             // member access
+            case TokenType.And: return (10, 11);             // bitwise AND
+            case TokenType.Xor: return (8, 9);               // bitwise XOR
+            case TokenType.Or: return (6, 7);                // bitwise OR
+            case TokenType.Question: return (4, 3);          // ternary (right-assoc)
+            case TokenType.As: return (1, 2);                // type cast (left-assoc, LOWEST)
         }
 
         throw new ParserException("Expected InfixOperator token", operation);

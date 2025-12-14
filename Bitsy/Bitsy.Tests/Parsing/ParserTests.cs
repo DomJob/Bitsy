@@ -304,6 +304,15 @@ public class ParserTests
     }
 
     [Test]
+    public void AsExpression_OfAConditional()
+    {
+        var code = "a ? b : c as Type";
+        var expression = ParseExpression(code);
+        Assert.That(expression, Is.InstanceOf<AsExpression>());
+        Assert.That(expression.ToString(), Is.EqualTo("((a ? b : c) as Type)"));
+    }
+    
+    [Test]
     public void DotExpression_Simple()
     {
         var code = "element.attribute";
