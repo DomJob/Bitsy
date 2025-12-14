@@ -1,5 +1,6 @@
 using Bitsy.Lexing;
 using Bitsy.Parsing.Expressions;
+using Bitsy.Parsing.Statements;
 
 namespace Bitsy.Parsing;
 
@@ -22,6 +23,21 @@ public class Parser
         return lexer.Next();
     }
 
+    public Statement ParseStatement()
+    {
+        var identifier = ParseExpression(0, [TokenType.Assignment]);
+
+        var op = Next();
+
+        if (op.Type == TokenType.Assignment)
+        {
+            var expression = ParseExpression(0, [TokenType.Identifier, TokenType.End]);
+            return new BindingStatement(identifier, expression);
+        }
+        
+        return null;
+    }
+    
     public Expression ParseExpression(int minBindingPower = 0, List<TokenType>? possibleEnds = null)
     {
         if (possibleEnds is null) possibleEnds = [TokenType.End];

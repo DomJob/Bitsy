@@ -4,7 +4,7 @@ using Bitsy.Reading;
 
 namespace Bitsy.Parsing;
 
-public class ParserTests
+public class ExpressionParsingTests
 {
     [Test]
     public void SingleIdentifierExpression()

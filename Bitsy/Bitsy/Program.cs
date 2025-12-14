@@ -19,9 +19,9 @@ public static class Program
 
             try
             {
-                var expression = parser.ParseExpression();
-                Console.WriteLine(expression.GetType().Name);
-                Console.WriteLine(expression.ToString());
+                var statement = parser.ParseStatement();
+                Console.WriteLine(statement.GetType().Name);
+                Console.WriteLine(statement.ToString());
             }
             catch (ParserException e)
             {
