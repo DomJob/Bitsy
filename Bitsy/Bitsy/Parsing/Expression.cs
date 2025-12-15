@@ -1,6 +1,6 @@
 namespace Bitsy.Parsing;
 
-public class Expression
+public abstract class Expression
 {
     
 }

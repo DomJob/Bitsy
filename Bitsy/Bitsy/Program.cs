@@ -19,7 +19,7 @@ public static class Program
 
             try
             {
-                var expression = parser.Parse();
+                var expression = parser.ParseExpression();
                 Console.WriteLine(expression);
             }
             catch (ParserException e)
