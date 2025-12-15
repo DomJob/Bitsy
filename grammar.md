@@ -1,32 +1,14 @@
 # Bitsy grammar
 
-```
-Program :=
-    TypeStatement
-    Assign
-```
+Prefix Expressions:
 
-## Type statement
+* Just the negation of bit expressions. [Operator, Expression]
+* Operator = ~
 
-```
-TypeStatement :=
-    Identifier
-    TypeTemplate?
-    LeftBrace
-        TypeDefinition
-    RightBrace
+Infix Expressions:
 
-TypeDefinition :=
-    Identifier Identifier
-    TypeDefinition?
+* `&` `^` `|` `as` `.` `(`
 
-TypeTemplate :=
-    LeftAngle
-    TemplateArguments
-    RightAngle
+Postfix Expressions:
 
-TemplateArguments :=
-    Identifier
-    (Comma TemplateArguments)?
-```
 

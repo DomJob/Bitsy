@@ -65,7 +65,7 @@ public class LexerTests
     [Test]
     public void MiscMashup()
     {
-        WhenCodeIs("a.b &^~|<> {}][")
+        WhenCodeIs("a.b &^~|<> {}")
             .Then.NextToken.IsOfType(TokenType.Identifier).And.HasValue("a")
             .And.NextToken.IsOfType(TokenType.Dot)
             .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("b")
@@ -77,8 +77,6 @@ public class LexerTests
             .And.NextToken.IsOfType(TokenType.RightAngle)
             .And.NextToken.IsOfType(TokenType.LeftBrace)
             .And.NextToken.IsOfType(TokenType.RightBrace)
-            .And.NextToken.IsOfType(TokenType.RightBracket)
-            .And.NextToken.IsOfType(TokenType.LeftBracket)
             .And.NextToken.IsOfType(TokenType.End);
     }
 

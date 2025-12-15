@@ -4,26 +4,23 @@ public enum TokenType
 {
     Identifier,
     LeftParenthesis,
-    RightParenthesis, // ()
-
+    RightParenthesis,
     Assignment,
-    LeftBracket,
-    RightBracket, // []
     LeftBrace,
-    RightBrace, // {}
+    RightBrace,
     LeftAngle,
-    RightAngle, // <>
+    RightAngle,
     Comma,
     Dot,
-    Arrow, // , . ->
+    Arrow,
     Return,
-    As, // Only textual keywords
+    As,
     And,
     Or,
     Xor,
-    Not, // Bit operations
+    Not,
     Question,
-    Colon, // Conditional branching
+    Colon,
     Illegal,
-    End // Meta
+    End
 }

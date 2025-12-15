@@ -31,8 +31,6 @@ public class Lexer
         {
             case '{': type = TokenType.LeftBrace; break;
             case '}': type = TokenType.RightBrace; break;
-            case '[': type = TokenType.LeftBracket; break;
-            case ']': type = TokenType.RightBracket; break;
             case '(': type = TokenType.LeftParenthesis; break;
             case ')': type = TokenType.RightParenthesis; break;
             case '<': type = TokenType.LeftAngle; break;
