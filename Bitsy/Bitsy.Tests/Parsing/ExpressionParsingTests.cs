@@ -255,6 +255,44 @@ public class ExpressionParsingTests
         
         Verify<ImplicitObjectExpression>("{0, ({0, 1} as Bit2), abc(a), (1 ^ 0), {b1: 0, b2: 1, b3: 0, b4: 2}}");
     }
+
+    [Test]
+    public void Conditional_Simple()
+    {
+        ParseExpression("a ? b : c");
+        
+        Verify<ConditionalExpression>("(a ? b : c)");
+    }
+    
+    [Test]
+    public void Conditional_Chained()
+    {
+        ParseExpression("cond1 ? doThis : otherwise ? doThat : giveUp");
+        
+        Verify<ConditionalExpression>("(cond1 ? doThis : (otherwise ? doThat : giveUp))");
+    }
+    
+    [Test]
+    public void Conditional_ChainedTheOtherWay()
+    {
+        ParseExpression("cond1 ? andCond2 ? beAmazed : beLessAmazed : scream");
+        
+        Verify<ConditionalExpression>("(cond1 ? (andCond2 ? beAmazed : beLessAmazed) : scream)");
+    }
+    
+    [Test]
+    public void Conditional_WithOtherStuff() {
+        ParseExpression("a & cond ? 0 : 1 ^ b");
+        
+        Verify<OperationExpression>("((a & cond) ? 0 : (1 ^ b))");
+    }
+    
+    [Test]
+    public void Conditional_WithOtherStuffForced() {
+        ParseExpression("a & (cond ? 0 : 1) ^ b");
+        
+        Verify<OperationExpression>("((a & (cond ? 0 : 1)) ^ b)");
+    }
     
     private void Verify<T>(string value) where T : Expression
     {
