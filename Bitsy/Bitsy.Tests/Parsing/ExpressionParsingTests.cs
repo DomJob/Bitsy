@@ -1,5 +1,6 @@
 using Bitsy.Lexing;
 using Bitsy.Parsing.Expressions;
+using Bitsy.Parsing.Parselets;
 using Bitsy.Reading;
 
 namespace Bitsy.Parsing;
@@ -142,6 +143,86 @@ public class ExpressionParsingTests
         ParseExpression("~func(1)");
         
         Verify<PrefixExpression>("~func(1)");
+    }
+
+    [Test]
+    public void DotExpression_Simple()
+    {
+        ParseExpression("abc.def");
+        
+        Verify<OperationExpression>("(abc.def)");
+    }
+    
+    [Test]
+    public void DotExpression_Chained()
+    {
+        ParseExpression("abc.def.ghi");
+        
+        Verify<OperationExpression>("((abc.def).ghi)");
+    }
+    
+    [Test]
+    public void DotExpression_Combined()
+    {
+        ParseExpression("abc.def & a");
+        
+        Verify<OperationExpression>("((abc.def) & a)");
+    }
+    
+    [Test]
+    public void Assignment_Simple()
+    {
+        ParseExpression("a = 1");
+        
+        Verify<OperationExpression>("a = 1");
+    }
+    
+    [Test]
+    public void Assignment_Complex()
+    {
+        ParseExpression("a = a & (b | c) ^ abc(def,ghi)");
+        
+        Verify<OperationExpression>("a = ((a & (b | c)) ^ abc(def, ghi))");
+    }
+
+    [Test]
+    public void As_Complex()
+    {
+        ParseExpression("a = a & (b | c) ^ abc(def,ghi) as SomeType");
+        
+        Verify<OperationExpression>("a = (((a & (b | c)) ^ abc(def, ghi)) as SomeType)");
+    }
+
+    [Test]
+    public void ExplicitObject_Simple()
+    {
+        ParseExpression("{a: 1, b:2, c:  3}");
+        
+        Verify<ExplicitObjectExpression>("{a: 1, b: 2, c: 3}");
+    }
+    
+    [Test]
+    public void ExplicitObject_LessSimple()
+    {
+        ParseExpression("{a: 1, b: func(arg), c:  abc&d}");
+        
+        Verify<ExplicitObjectExpression>("{a: 1, b: func(arg), c: (abc & d)}");
+    }
+    
+    [Test]
+    public void ExplicitObject_Assignment()
+    {
+        ParseExpression("someObject = {a: 1, b: func(arg), c:  abc&d}");
+        
+        Verify<OperationExpression>("someObject = {a: 1, b: func(arg), c: (abc & d)}");
+    }
+    
+    [Test]
+    public void ExplicitObject_Assignment_AndCast()
+    {
+        ParseExpression("someObject = {a: 1, b: func(arg), c:  abc&d} as Type");
+        
+        Verify<OperationExpression>("someObject = ({a: 1, b: func(arg), c: (abc & d)} as Type)");
     }
     
     private void Verify<T>(string value) where T : Expression

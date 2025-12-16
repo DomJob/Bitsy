@@ -17,6 +17,10 @@ public class OperationExpression : Expression
 
     public override string ToString()
     {
+        if(operation.Type == TokenType.Dot)
+            return $"({left}.{right})";
+        if(operation.Type == TokenType.Assignment)
+            return $"{left} = {right}";
         return $"({left} {operation.Literal} {right})";
     }
 }

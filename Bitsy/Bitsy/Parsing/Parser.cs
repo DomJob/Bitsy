@@ -13,6 +13,7 @@ public class Parser
     {
         this.lexer = lexer;
         
+        Register(TokenType.LeftBrace, new ObjectParselet());
         Register(TokenType.Identifier, new NameParselet());
         Register(TokenType.LeftParenthesis, new GroupParselet());
         Register(TokenType.LeftParenthesis, new CallParselet());
@@ -20,6 +21,9 @@ public class Parser
         Infix(TokenType.And, BindingPower.And);
         Infix(TokenType.Or, BindingPower.Or);
         Infix(TokenType.Xor, BindingPower.Xor);
+        Infix(TokenType.Dot, BindingPower.Dot);
+        Infix(TokenType.Assignment, BindingPower.Assign);
+        Infix(TokenType.As, BindingPower.As);
     }
 
     public Expression ParseExpression() => ParseExpression(0);
