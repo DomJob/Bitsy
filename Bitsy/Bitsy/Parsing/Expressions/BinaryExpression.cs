@@ -9,6 +9,19 @@ public class BinaryExpression : Expression
         Left = left;
         Operation = operation;
         Right = right;
+
+        if (Operation.Type == TokenType.Assignment && Left.GetType() != typeof(NameExpression))
+        {
+            throw new SyntaxError("Binding must target an identifier", Left.Position);
+        }
+        if (Operation.Type == TokenType.Dot && Right.GetType() != typeof(NameExpression))
+        {
+            throw new SyntaxError("Object accessor must be a name", Right.Position);
+        }
+        if (Operation.Type == TokenType.As && Right.GetType() != typeof(NameExpression) && Right.GetType() != typeof(TypeExpression))
+        {
+            throw new SyntaxError("Casting must be to a name or type name", Right.Position);
+        }
     }
 
     public Expression Left { get; }

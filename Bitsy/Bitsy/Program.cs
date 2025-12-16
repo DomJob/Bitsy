@@ -26,6 +26,10 @@ public static class Program
             {
                 Console.WriteLine($"Parsing error: {e.Message} - {e.Token}");
             }
+            catch (SyntaxError e)
+            {
+                Console.WriteLine($"Syntax error: {e.Message} - {e.Position}");
+            }
         }
     }
 }

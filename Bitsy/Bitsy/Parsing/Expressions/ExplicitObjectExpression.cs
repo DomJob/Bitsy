@@ -5,6 +5,12 @@ public class ExplicitObjectExpression : Expression
     public ExplicitObjectExpression(List<(Expression, Expression)> body)
     {
         Body = body;
+        
+        foreach(var (name, _) in body)
+        {
+            if (name.GetType() != typeof(NameExpression))
+                throw new SyntaxError("Property in explicit object must be an identifier", name.Position);
+        }
     }
 
     public List<(Expression, Expression)> Body { get; }

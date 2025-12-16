@@ -51,6 +51,7 @@ public class Parser
 
             var infix = infixParselets[token.Type];
             left = infix.Parse(this, left, token);
+            left.Position = token.Position;
         }
         
         left.Position = position;

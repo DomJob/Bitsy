@@ -275,17 +275,7 @@ public class ExpressionParsingTests
     [Test]
     public void ExplicitObject_WrongSyntax()
     {
-        try
-        {
-            ParseExpression("someObject = {a: 1, b, c:  abc&d} as Type");
-            Assert.That(expression, Is.Null);
-        }
-        catch (ParserException e)
-        {
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.Token);
-            Assert.Pass();
-        }
+        VerifyThrows<ParserException>("someObject = {a: 1, b, c:  abc&d} as Type");
     }
 
     [Test]
@@ -389,7 +379,7 @@ public class ExpressionParsingTests
     {
         ParseExpression("a->b");
         
-        Verify<TypeName>("a->b");
+        Verify<TypeExpression>("a->b");
     }
 
     [Test]
@@ -397,7 +387,7 @@ public class ExpressionParsingTests
     {
         ParseExpression("()->a");
         
-        Verify<TypeName>("()->a");
+        Verify<TypeExpression>("()->a");
     }
     
     [Test]
@@ -405,7 +395,7 @@ public class ExpressionParsingTests
     {
         ParseExpression("(a,b)->c");
         
-        Verify<TypeName>("(a, b)->c");
+        Verify<TypeExpression>("(a, b)->c");
     }
 
     [Test]
@@ -462,6 +452,26 @@ public class ExpressionParsingTests
     {
         ParseExpression("SomeType<T> { T->List<Bit> bits }");
         Verify<TypeDeclaration>("SomeType<T> { T->List<Bit> bits }");
+    }
+
+    [Test]
+    public void SyntaxError_NotNameOnDotExpression()
+    {
+        VerifyThrows<SyntaxError>("abc.(efg & 1)");
+    }
+
+    private T VerifyThrows<T>(string code) where T : Exception
+    {
+        try
+        {
+            ParseExpression(code);
+            Assert.Fail();
+            return null;
+        }
+        catch (T e)
+        {
+            return e;
+        }
     }
     
     private void Verify<T>(string value) where T : Expression

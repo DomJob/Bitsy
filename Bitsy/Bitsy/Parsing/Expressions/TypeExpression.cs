@@ -1,12 +1,12 @@
 namespace Bitsy.Parsing.Expressions;
 
-public class TypeName : Expression
+public class TypeExpression : Expression
 {
     public List<Expression> Inputs { get; }
     
     public Expression Output { get; }
     
-    public TypeName(List<Expression> inputs, Expression output)
+    public TypeExpression(List<Expression> inputs, Expression output)
     {
         Inputs = inputs;
         Output = output;

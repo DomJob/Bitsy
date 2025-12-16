@@ -27,20 +27,20 @@ public class GroupParselet : PrefixParselet
         while(!parser.Match(TokenType.RightParenthesis))
             inputs.Add(parser.ParseExpression());
         parser.Consume(TokenType.Arrow);
-        return new TypeName(inputs, parser.ParseExpression());
+        return new TypeExpression(inputs, parser.ParseExpression());
     }
 
-    private TypeName ParseTypeWithOneInput(Parser parser, Expression expression)
+    private TypeExpression ParseTypeWithOneInput(Parser parser, Expression expression)
     {
-        return new TypeName([], parser.ParseExpression());
+        return new TypeExpression([], parser.ParseExpression());
     }
 
-    private TypeName ParseTypeWithNoInput(Parser parser)
+    private TypeExpression ParseTypeWithNoInput(Parser parser)
     {
         parser.Consume(TokenType.Arrow);
         var output = parser.ParseExpression();
 
-        return new TypeName([], output);
+        return new TypeExpression([], output);
     }
 
 
