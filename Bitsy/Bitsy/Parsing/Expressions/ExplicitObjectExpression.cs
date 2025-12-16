@@ -2,15 +2,15 @@ namespace Bitsy.Parsing.Expressions;
 
 public class ExplicitObjectExpression : Expression
 {
-    private List<(Expression, Expression)> body;
+    public List<(Expression, Expression)> Body { get; }
 
     public ExplicitObjectExpression(List<(Expression, Expression)> body)
     {
-        this.body = body;
+        Body = body;
     }
 
     public override string ToString()
     {
-        return "{" + string.Join(", ", body.Select(v => $"{v.Item1}: {v.Item2}")) + "}";
+        return "{" + string.Join(", ", Body.Select(v => $"{v.Item1}: {v.Item2}")) + "}";
     }
 }

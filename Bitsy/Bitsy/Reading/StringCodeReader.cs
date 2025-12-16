@@ -3,7 +3,7 @@ namespace Bitsy.Reading;
 public class StringCodeReader : IReader
 {
     private readonly string text;
-    private int column = 1;
+    private int column = 0;
     private int cursor;
     private int line = 1;
 

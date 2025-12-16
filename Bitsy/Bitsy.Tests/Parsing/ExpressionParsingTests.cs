@@ -1,6 +1,5 @@
 using Bitsy.Lexing;
 using Bitsy.Parsing.Expressions;
-using Bitsy.Parsing.Parselets;
 using Bitsy.Reading;
 
 namespace Bitsy.Parsing;
@@ -223,6 +222,38 @@ public class ExpressionParsingTests
         ParseExpression("someObject = {a: 1, b: func(arg), c:  abc&d} as Type");
         
         Verify<OperationExpression>("someObject = ({a: 1, b: func(arg), c: (abc & d)} as Type)");
+    }
+    
+    [Test]
+    public void ExplicitObject_WrongSyntax()
+    {
+        try
+        {
+            ParseExpression("someObject = {a: 1, b, c:  abc&d} as Type");
+            Assert.Fail();
+        }
+        catch (ParserException e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.Token);
+            Assert.Pass();
+        }
+    }
+    
+    [Test]
+    public void ImplicitObject_Simple()
+    {
+        ParseExpression("{0,1,0,1}");
+        
+        Verify<ImplicitObjectExpression>("{0, 1, 0, 1}");
+    }
+    
+    [Test]
+    public void ImplicitObject_Complex()
+    {
+        ParseExpression("{0,{0,1} as Bit2,abc(a),1^0, {b1:0,b2:1,b3:0,b4: 2}}");
+        
+        Verify<ImplicitObjectExpression>("{0, ({0, 1} as Bit2), abc(a), (1 ^ 0), {b1: 0, b2: 1, b3: 0, b4: 2}}");
     }
     
     private void Verify<T>(string value) where T : Expression

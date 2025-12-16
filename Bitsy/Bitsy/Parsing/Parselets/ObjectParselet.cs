@@ -9,13 +9,13 @@ public class ObjectParselet : PrefixParselet
 
     public Expression Parse(Parser parser, Token token)
     {
+        if (parser.Match(TokenType.RightBrace))
+            throw new ParserException("Expected expression, can't have empty object", token);
+        
         var expr = parser.ParseExpression(Precedence);
 
         if (parser.Match(TokenType.Colon)) // Explicit
         {
-            if (parser.Match(TokenType.RightBrace))
-                throw new ParserException("Expected expression, can't have empty object", token);
-            
             var key = expr;
             var value = parser.ParseExpression();
             List<(Expression, Expression)> body = [(key, value)];
@@ -30,11 +30,18 @@ public class ObjectParselet : PrefixParselet
             parser.Consume(TokenType.RightBrace);
             return new ExplicitObjectExpression(body);
         }
-        else // Implicit
+        else if (parser.Match(TokenType.Comma)) // Implicit
         {
-            parser.Consume(TokenType.Comma);
-            // TODO
-            return null;
+            var body = new List<Expression> { expr };
+
+            do
+            {
+                body.Add(parser.ParseExpression());
+            } while (parser.Match(TokenType.Comma));
+            parser.Consume(TokenType.RightBrace);
+
+            return new ImplicitObjectExpression(body);
         }
+        throw new ParserException("Expected colon or comma after first expression in object");
     }
 }

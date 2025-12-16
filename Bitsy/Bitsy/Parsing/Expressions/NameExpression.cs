@@ -4,12 +4,12 @@ namespace Bitsy.Parsing.Expressions;
 
 public class NameExpression : Expression
 {
-    private readonly Token name;
+    public Token Name { get; }
 
     public NameExpression(Token name)
     {
-        this.name = name;
+        Name = name;
     }
 
-    public override String ToString() => name.Literal;
+    public override String ToString() => Name.Literal;
 }
