@@ -13,6 +13,5 @@ public class Evaluator
 
     public void Evaluate(Expression expression)
     {
-        
     }
 }

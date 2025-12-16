@@ -5,14 +5,14 @@ namespace Bitsy.Parsing;
 
 public class Parser
 {
+    private readonly Dictionary<TokenType, InfixParselet> infixParselets = new();
     private readonly Lexer lexer;
     private readonly Dictionary<TokenType, PrefixParselet> prefixParselets = new();
-    private readonly Dictionary<TokenType, InfixParselet> infixParselets = new();
-    
+
     public Parser(Lexer lexer)
     {
         this.lexer = lexer;
-        
+
         Register(TokenType.LeftBrace, new ObjectParselet());
         Register(TokenType.Identifier, new NameParselet());
         Register(TokenType.LeftParenthesis, new GroupParselet());
@@ -27,8 +27,11 @@ public class Parser
         Infix(TokenType.As, BindingPower.As);
     }
 
-    public Expression ParseExpression() => ParseExpression(0);
-    
+    public Expression ParseExpression()
+    {
+        return ParseExpression(0);
+    }
+
     public Expression ParseExpression(int precedence)
     {
         var token = Consume();
@@ -37,16 +40,17 @@ public class Parser
 
         var left = prefix.Parse(this, token);
 
-        while (precedence < GetPrecedence()) {
+        while (precedence < GetPrecedence())
+        {
             token = Consume();
 
-            InfixParselet infix = infixParselets[token.Type];
+            var infix = infixParselets[token.Type];
             left = infix.Parse(this, left, token);
         }
 
         return left;
     }
-    
+
     private int GetPrecedence()
     {
         var token = Peek();
@@ -54,7 +58,7 @@ public class Parser
             return infix.Precedence;
         return 0;
     }
-    
+
     private Token Peek()
     {
         return lexer.Peek();
@@ -71,19 +75,18 @@ public class Parser
         if (type != expected) return false;
         Consume();
         return true;
-    } 
-    
+    }
+
     public Token Consume(TokenType expected)
     {
-        Token token = Peek();
-        if (token.Type != expected) {
-            throw new ParserException("Expected " + expected, token);
-        }
-    
+        var token = Peek();
+        if (token.Type != expected) throw new ParserException("Expected " + expected, token);
+
         return Consume();
     }
 
-    private void Register(TokenType token, PrefixParselet parselet) {
+    private void Register(TokenType token, PrefixParselet parselet)
+    {
         prefixParselets[token] = parselet;
     }
 
@@ -96,6 +99,7 @@ public class Parser
     {
         Register(token, new PrefixOperatorParselet(precedence));
     }
+
     private void Infix(TokenType token, int precedence, bool isRight = false)
     {
         Register(token, new BinaryOperatorParselet(precedence, isRight));

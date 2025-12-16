@@ -10,7 +10,7 @@ public class ConditionalParselet : InfixParselet
         var ifTrue = parser.ParseExpression();
         parser.Consume(TokenType.Colon);
         var ifFalse = parser.ParseExpression();
-        
+
         return new ConditionalExpression(left, ifTrue, ifFalse);
     }
 

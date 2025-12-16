@@ -10,10 +10,13 @@ public class CallParselet : InfixParselet
         List<Expression> args = new();
 
         // There may be no arguments at all.
-        if (!parser.Match(TokenType.RightParenthesis)) {
-            do {
+        if (!parser.Match(TokenType.RightParenthesis))
+        {
+            do
+            {
                 args.Add(parser.ParseExpression());
             } while (parser.Match(TokenType.Comma));
+
             parser.Consume(TokenType.RightParenthesis);
         }
 
