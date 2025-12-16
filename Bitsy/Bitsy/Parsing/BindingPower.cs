@@ -2,6 +2,7 @@ namespace Bitsy.Parsing;
 
 public static class BindingPower
 {
+    public const int FunctionDeclaration = 11;
     public const int Call = 10;
     public const int Dot = 9;
     public const int Not = 8;

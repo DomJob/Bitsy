@@ -293,7 +293,7 @@ public class ExpressionParsingTests
     {
         ParseExpression("a & cond ? 0 : 1 ^ b");
 
-        Verify<BinaryExpression>("((a & cond) ? 0 : (1 ^ b))");
+        Verify<ConditionalExpression>("((a & cond) ? 0 : (1 ^ b))");
     }
 
     [Test]
@@ -304,10 +304,35 @@ public class ExpressionParsingTests
         Verify<BinaryExpression>("((a & (cond ? 0 : 1)) ^ b)");
     }
 
+    [Test]
+    public void FunctionDeclaration_Simplest()
+    {
+        ParseExpression("someFunc() { a = 1 }");
+        
+        Verify<FunctionDeclaration>("someFunc() { a = 1 }");
+    }
+    
+    [Test]
+    public void FunctionDeclaration_WithArg()
+    {
+        ParseExpression("someFunc(Bit a) { b = a & 1 }");
+        
+        Verify<FunctionDeclaration>("someFunc(Bit a) { b = (a & 1) }");
+    }
+    
+    [Test]
+    public void FunctionDeclaration_WithArgs()
+    {
+        ParseExpression("someFunc(Bit a, SomeType b) { c = a & b.idk d=1 }");
+        
+        Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
+    }
+
     private void Verify<T>(string value) where T : Expression
     {
         Assert.That(expression.ToString(), Is.EqualTo(value));
         Assert.That(expression, Is.TypeOf<T>());
+        Console.WriteLine(value);
     }
 
     private void Verify(string value)
