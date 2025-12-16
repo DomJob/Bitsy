@@ -15,10 +15,7 @@ public class UnaryExpression : Expression
 
     public override string ToString()
     {
-        if (Operation.Type == TokenType.Return)
-        {
-            return $"return {Operand}";
-        }
+        if (Operation.Type == TokenType.Return) return $"return {Operand}";
         return $"{Operation.Literal}{Operand}";
     }
 }

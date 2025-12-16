@@ -53,7 +53,7 @@ public class Parser
             left = infix.Parse(this, left, token);
             left.Position = token.Position;
         }
-        
+
         left.Position = position;
         return left;
     }

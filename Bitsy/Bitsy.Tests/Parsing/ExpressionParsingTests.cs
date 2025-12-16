@@ -55,7 +55,7 @@ public class ExpressionParsingTests
 
         Verify<BinaryExpression>("(~a & b)");
     }
-    
+
     [Test]
     public void ReturnStatement()
     {
@@ -63,7 +63,7 @@ public class ExpressionParsingTests
 
         Verify<UnaryExpression>("return a");
     }
-    
+
     [Test]
     public void ReturnStatement_Precedence()
     {
@@ -71,7 +71,7 @@ public class ExpressionParsingTests
 
         Verify<UnaryExpression>("return (a & b)");
     }
-    
+
     [Test]
     public void ReturnStatement_Precedence2()
     {
@@ -79,7 +79,7 @@ public class ExpressionParsingTests
 
         Verify<UnaryExpression>("return ~a");
     }
-    
+
     [Test]
     public void ReturnStatement_Precedence3()
     {
@@ -95,7 +95,7 @@ public class ExpressionParsingTests
 
         Verify<UnaryExpression>("return a = 1");
     }
-    
+
     [Test]
     public void NegateTwice()
     {
@@ -338,39 +338,39 @@ public class ExpressionParsingTests
     public void FunctionDeclaration_Simplest()
     {
         ParseExpression("someFunc() { a = 1 }");
-        
+
         Verify<FunctionDeclaration>("someFunc() { a = 1 }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithArg()
     {
         ParseExpression("someFunc(Bit a) { b = a & 1 }");
-        
+
         Verify<FunctionDeclaration>("someFunc(Bit a) { b = (a & 1) }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithFunctionalArg()
     {
         ParseExpression("someFunc(Bit->Bit a) { b = a() }");
-        
+
         Verify<FunctionDeclaration>("someFunc(Bit->Bit a) { b = a() }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithTwoFunctionalArgs()
     {
         ParseExpression("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
-        
+
         Verify<FunctionDeclaration>("someFunc(Bit->Bit a, ()->Bit b) { c = (a(1) ^ b()) }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithArgs()
     {
         ParseExpression("someFunc(Bit a, SomeType b) { c = a & b.idk d=1 }");
-        
+
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
 
@@ -378,7 +378,7 @@ public class ExpressionParsingTests
     public void TypeExpression_Simple()
     {
         ParseExpression("a->b");
-        
+
         Verify<TypeExpression>("a->b");
     }
 
@@ -386,15 +386,15 @@ public class ExpressionParsingTests
     public void TypeExpression_Empty()
     {
         ParseExpression("()->a");
-        
+
         Verify<TypeExpression>("()->a");
     }
-    
+
     [Test]
     public void TypeExpression_TwoInputs()
     {
         ParseExpression("(a,b)->c");
-        
+
         Verify<TypeExpression>("(a, b)->c");
     }
 
@@ -404,49 +404,49 @@ public class ExpressionParsingTests
         ParseExpression("SomeType { Bit b }");
         Verify<TypeDeclaration>("SomeType { Bit b }");
     }
-    
+
     [Test]
     public void TypeDeclaration_Multiple()
     {
         ParseExpression("SomeType { Bit b OtherType c }");
         Verify<TypeDeclaration>("SomeType { Bit b OtherType c }");
     }
-    
+
     [Test]
     public void TypeDeclaration_Template_Simple()
     {
         ParseExpression("SomeType<T> { T b }");
         Verify<TypeDeclaration>("SomeType<T> { T b }");
     }
-    
+
     [Test]
     public void TypeDeclaration_Template_Multiple()
     {
         ParseExpression("SomeType<T> { T b OtherType c }");
         Verify<TypeDeclaration>("SomeType<T> { T b OtherType c }");
     }
-    
+
     [Test]
     public void TypeDeclaration_MultiTemplate_Multiple()
     {
         ParseExpression("SomeType<T,V> { T b V c }");
         Verify<TypeDeclaration>("SomeType<T, V> { T b V c }");
     }
-    
+
     [Test]
     public void NameExpression_Templated()
     {
         ParseExpression("SomeType<T,V>");
         Verify<NameExpression>("SomeType<T, V>");
     }
-    
+
     [Test]
     public void TypeDeclaration_WithTemplatedBody()
     {
         ParseExpression("SomeType { List<Bit> bits }");
         Verify<TypeDeclaration>("SomeType { List<Bit> bits }");
     }
-    
+
     [Test]
     public void TypeDeclaration_WithCallableBody()
     {
@@ -473,7 +473,7 @@ public class ExpressionParsingTests
             return e;
         }
     }
-    
+
     private void Verify<T>(string value) where T : Expression
     {
         Console.WriteLine(expression);

@@ -6,24 +6,20 @@ namespace Bitsy.Parsing.Parselets;
 public class TypeParselet : InfixParselet
 {
     public int Precedence => BindingPower.TypeDeclaration;
-    
+
     public Expression Parse(Parser parser, Expression left, Token token)
     {
-        return token.Type == TokenType.LeftBrace ? 
-            ParsePlainType(parser, left) : 
-            ParseTemplatedType(parser, left);
+        return token.Type == TokenType.LeftBrace ? ParsePlainType(parser, left) : ParseTemplatedType(parser, left);
     }
-    
+
     private TypeDeclaration ParsePlainType(Parser parser, Expression typeName)
     {
-        
-        
         return new TypeDeclaration(typeName, ParseBody(parser));
     }
 
     private List<(Expression, Expression)> ParseBody(Parser parser)
     {
-        List<(Expression, Expression)> body = new List<(Expression, Expression)>();
+        List<(Expression, Expression)> body = new();
 
         while (!parser.Match(TokenType.RightBrace))
         {
@@ -50,6 +46,7 @@ public class TypeParselet : InfixParselet
             nameExpr.Templates = templates;
             return nameExpr;
         }
+
         throw new ParserException("Invalid use of Templating");
     }
 }

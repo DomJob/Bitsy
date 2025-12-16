@@ -16,7 +16,7 @@ public class FunctionParselet : InfixParselet
                 return ParseCall(parser, left, expression);
             if (parser.Match(TokenType.RightParenthesis))
                 return new CallExpression(left, [expression]);
-            
+
             return ParseFunctionDeclaration(parser, left, expression);
         }
 
@@ -26,7 +26,9 @@ public class FunctionParselet : InfixParselet
         return new CallExpression(left, args);
     }
 
-    private FunctionDeclaration ParseFunctionDeclaration(Parser parser, Expression name, Expression? argType=null)
+    public int Precedence => BindingPower.Call;
+
+    private FunctionDeclaration ParseFunctionDeclaration(Parser parser, Expression name, Expression? argType = null)
     {
         List<(Expression, Expression)> args = [];
 
@@ -35,15 +37,16 @@ public class FunctionParselet : InfixParselet
             var argName = parser.ParseExpression();
             args.Add((argType, argName));
 
-            
+
             while (parser.Match(TokenType.Comma))
             {
                 argType = parser.ParseExpression();
                 argName = parser.ParseExpression();
                 args.Add((argType, argName));
-                if(parser.Match(TokenType.RightParenthesis))
+                if (parser.Match(TokenType.RightParenthesis))
                     break;
             }
+
             parser.Match(TokenType.RightParenthesis);
 
             parser.Consume(TokenType.LeftBrace);
@@ -51,10 +54,7 @@ public class FunctionParselet : InfixParselet
 
         List<Expression> body = [];
 
-        while (!parser.Match(TokenType.RightBrace))
-        {
-            body.Add(parser.ParseExpression());
-        }
+        while (!parser.Match(TokenType.RightBrace)) body.Add(parser.ParseExpression());
 
         return new FunctionDeclaration(name, args, body);
     }
@@ -65,15 +65,14 @@ public class FunctionParselet : InfixParselet
             return new CallExpression(callee, []);
 
         var args = new List<Expression> { firstArg! };
-        
+
         do
         {
             args.Add(parser.ParseExpression());
         } while (parser.Match(TokenType.Comma));
+
         parser.Consume(TokenType.RightParenthesis);
-        
+
         return new CallExpression(callee, args);
     }
-    
-    public int Precedence => BindingPower.Call;
 }
