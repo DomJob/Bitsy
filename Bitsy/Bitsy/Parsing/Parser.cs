@@ -18,7 +18,9 @@ public class Parser
         Register(TokenType.LeftParenthesis, new GroupParselet());
         Register(TokenType.LeftParenthesis, new FunctionParselet());
         Register(TokenType.Question, new ConditionalParselet());
-        Register(TokenType.Arrow, new TypeParselet());
+        Register(TokenType.Arrow, new TypeNameParselet());
+        Register(TokenType.LeftBrace, new TypeParselet());
+        Register(TokenType.LeftAngle, new TypeParselet());
         Prefix(TokenType.Not, BindingPower.Not);
         Infix(TokenType.And, BindingPower.And);
         Infix(TokenType.Or, BindingPower.Or);
