@@ -55,7 +55,47 @@ public class ExpressionParsingTests
 
         Verify<BinaryExpression>("(~a & b)");
     }
+    
+    [Test]
+    public void ReturnStatement()
+    {
+        ParseExpression("return a");
 
+        Verify<UnaryExpression>("return a");
+    }
+    
+    [Test]
+    public void ReturnStatement_Precedence()
+    {
+        ParseExpression("return a&b");
+
+        Verify<UnaryExpression>("return (a & b)");
+    }
+    
+    [Test]
+    public void ReturnStatement_Precedence2()
+    {
+        ParseExpression("return ~a");
+
+        Verify<UnaryExpression>("return ~a");
+    }
+    
+    [Test]
+    public void ReturnStatement_Precedence3()
+    {
+        ParseExpression("return ~a as SomeType");
+
+        Verify<UnaryExpression>("return (~a as SomeType)");
+    }
+
+    [Test]
+    public void ReturnStatement_Precedence4()
+    {
+        ParseExpression("return a=1");
+
+        Verify<UnaryExpression>("return a = 1");
+    }
+    
     [Test]
     public void NegateTwice()
     {
@@ -428,7 +468,7 @@ public class ExpressionParsingTests
     {
         Console.WriteLine(expression);
         Assert.That(expression.ToString(), Is.EqualTo(value));
-        Assert.That(expression, Is.TypeOf<T>());
+        Assert.That(expression, Is.InstanceOf<T>());
     }
 
     private void Verify(string value)

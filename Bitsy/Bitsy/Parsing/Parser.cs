@@ -21,6 +21,7 @@ public class Parser
         Register(TokenType.Arrow, new TypeNameParselet());
         Register(TokenType.LeftBrace, new TypeParselet());
         Register(TokenType.LeftAngle, new TypeParselet());
+        Prefix(TokenType.Return, BindingPower.Return);
         Prefix(TokenType.Not, BindingPower.Not);
         Infix(TokenType.And, BindingPower.And);
         Infix(TokenType.Or, BindingPower.Or);
