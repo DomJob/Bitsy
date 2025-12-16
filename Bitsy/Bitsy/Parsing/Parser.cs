@@ -15,10 +15,11 @@ public class Parser
         
         Register(TokenType.Identifier, new NameParselet());
         Register(TokenType.LeftParenthesis, new GroupParselet());
-        Prefix(TokenType.Not, 4);
-        Infix(TokenType.And, 3);
-        Infix(TokenType.Or, 2);
-        Infix(TokenType.Xor, 1);
+        Register(TokenType.LeftParenthesis, new CallParselet());
+        Prefix(TokenType.Not, BindingPower.Not);
+        Infix(TokenType.And, BindingPower.And);
+        Infix(TokenType.Or, BindingPower.Or);
+        Infix(TokenType.Xor, BindingPower.Xor);
     }
 
     public Expression ParseExpression() => ParseExpression(0);
@@ -58,6 +59,14 @@ public class Parser
     {
         return lexer.Next();
     }
+
+    public bool Match(TokenType expected)
+    {
+        var type = Peek().Type;
+        if (type != expected) return false;
+        Consume();
+        return true;
+    } 
     
     public Token Consume(TokenType expected)
     {

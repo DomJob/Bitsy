@@ -87,6 +87,62 @@ public class ExpressionParsingTests
         
         Verify<OperationExpression>("(a ^ (b & c))");
     }
+
+    [Test]
+    public void CallExpression_NoArgs()
+    {
+        ParseExpression("abc()");
+        
+        Verify<CallExpression>("abc()");
+    }
+    
+    [Test]
+    public void CallExpression_OneArgs()
+    {
+        ParseExpression("abc(1)");
+        
+        Verify<CallExpression>("abc(1)");
+    }
+    
+    [Test]
+    public void CallExpression_TwoArgs()
+    {
+        ParseExpression("abc(def, 2)");
+        
+        Verify<CallExpression>("abc(def, 2)");
+    }
+    
+    [Test]
+    public void CallExpression_ThreeArgs_Nested()
+    {
+        ParseExpression("abc(def, ghi(3))");
+        
+        Verify<CallExpression>("abc(def, ghi(3))");
+    }
+
+    [Test]
+    public void CombineCallAnd()
+    {
+        ParseExpression("1 & abc(def, 2)");
+        
+        Verify<OperationExpression>("(1 & abc(def, 2))");
+    }
+    
+    [Test]
+    public void ComplexCall()
+    {
+        ParseExpression("(def(a^b)&1)(abc)");
+        
+        Verify<CallExpression>("(def((a ^ b)) & 1)(abc)");
+    }
+    
+    [Test]
+    public void NegateCall()
+    {
+        ParseExpression("~func(1)");
+        
+        Verify<PrefixExpression>("~func(1)");
+    }
     
     private void Verify<T>(string value) where T : Expression
     {
