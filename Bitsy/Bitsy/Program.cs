@@ -20,7 +20,7 @@ public static class Program
             try
             {
                 var expression = parser.ParseExpression();
-                Console.WriteLine(expression);
+                Console.WriteLine(expression.GetType() + " : " + expression);
             }
             catch (ParserException e)
             {

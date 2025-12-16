@@ -238,7 +238,7 @@ public class ExpressionParsingTests
         try
         {
             ParseExpression("someObject = {a: 1, b, c:  abc&d} as Type");
-            Assert.Fail();
+            Assert.That(expression, Is.Null);
         }
         catch (ParserException e)
         {
@@ -321,6 +321,22 @@ public class ExpressionParsingTests
     }
     
     [Test]
+    public void FunctionDeclaration_WithFunctionalArg()
+    {
+        ParseExpression("someFunc(Bit->Bit a) { b = a() }");
+        
+        Verify<FunctionDeclaration>("someFunc(Bit->Bit a) { b = a() }");
+    }
+    
+    [Test]
+    public void FunctionDeclaration_WithTwoFunctionalArgs()
+    {
+        ParseExpression("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
+        
+        Verify<FunctionDeclaration>("someFunc(Bit->Bit a, ()->Bit b) { c = (a(1) ^ b()) }");
+    }
+    
+    [Test]
     public void FunctionDeclaration_WithArgs()
     {
         ParseExpression("someFunc(Bit a, SomeType b) { c = a & b.idk d=1 }");
@@ -328,11 +344,35 @@ public class ExpressionParsingTests
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
 
+    [Test]
+    public void TypeExpression_Simple()
+    {
+        ParseExpression("a->b");
+        
+        Verify<TypeName>("a->b");
+    }
+
+    [Test]
+    public void TypeExpression_Empty()
+    {
+        ParseExpression("()->a");
+        
+        Verify<TypeName>("()->a");
+    }
+    
+    [Test]
+    public void TypeExpression_TwoInputs()
+    {
+        ParseExpression("(a,b)->c");
+        
+        Verify<TypeName>("(a, b)->c");
+    }
+    
     private void Verify<T>(string value) where T : Expression
     {
+        Console.WriteLine(expression);
         Assert.That(expression.ToString(), Is.EqualTo(value));
         Assert.That(expression, Is.TypeOf<T>());
-        Console.WriteLine(value);
     }
 
     private void Verify(string value)
