@@ -3,11 +3,18 @@ using Bitsy.Parsing.Expressions;
 
 namespace Bitsy.Parsing.Parselets;
 
-public class PrefixOperatorParselet : IPrefixParselet
+public class PrefixOperatorParselet : PrefixParselet
 {
+    public int Precedence { get; }
+
+    public PrefixOperatorParselet(int precedence)
+    {
+        Precedence = precedence;
+    }
+
     public Expression Parse(Parser parser, Token token)
     {
-        Expression operand = parser.ParseExpression();
+        var operand = parser.ParseExpression(Precedence);
         return new PrefixExpression(token, operand);
     }
 }

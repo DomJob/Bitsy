@@ -6,24 +6,47 @@ namespace Bitsy.Parsing;
 public class Parser
 {
     private readonly Lexer lexer;
-    private readonly Dictionary<TokenType, IPrefixParselet> prefixParselets = new();
+    private readonly Dictionary<TokenType, PrefixParselet> prefixParselets = new();
+    private readonly Dictionary<TokenType, InfixParselet> infixParselets = new();
     
     public Parser(Lexer lexer)
     {
         this.lexer = lexer;
         
         Register(TokenType.Identifier, new NameParselet());
-        Prefix(TokenType.Not);
+        Register(TokenType.LeftParenthesis, new GroupParselet());
+        Prefix(TokenType.Not, 4);
+        Infix(TokenType.And, 3);
+        Infix(TokenType.Or, 2);
+        Infix(TokenType.Xor, 1);
     }
+
+    public Expression ParseExpression() => ParseExpression(0);
     
-    public Expression ParseExpression()
+    public Expression ParseExpression(int precedence)
     {
         var token = Consume();
-        var prefix = prefixParselets[token.Type];
-        if (prefix == null)
+        if (!prefixParselets.TryGetValue(token.Type, out var prefix))
             throw new ParserException("Could not parse token", token);
 
-        return prefix.Parse(this, token);
+        var left = prefix.Parse(this, token);
+
+        while (precedence < GetPrecedence()) {
+            token = Consume();
+
+            InfixParselet infix = infixParselets[token.Type];
+            left = infix.Parse(this, left, token);
+        }
+
+        return left;
+    }
+    
+    private int GetPrecedence()
+    {
+        var token = Peek();
+        if (infixParselets.TryGetValue(token.Type, out var infix))
+            return infix.Precedence;
+        return 0;
     }
     
     private Token Peek()
@@ -35,13 +58,33 @@ public class Parser
     {
         return lexer.Next();
     }
+    
+    public Token Consume(TokenType expected)
+    {
+        Token token = Peek();
+        if (token.Type != expected) {
+            throw new ParserException("Expected " + expected, token);
+        }
+    
+        return Consume();
+    }
 
-    private void Register(TokenType token, IPrefixParselet parselet) {
+    private void Register(TokenType token, PrefixParselet parselet) {
         prefixParselets[token] = parselet;
     }
 
-    private void Prefix(TokenType token) {
-        Register(token, new PrefixOperatorParselet());
+    private void Register(TokenType token, InfixParselet parselet)
+    {
+        infixParselets[token] = parselet;
+    }
+
+    private void Prefix(TokenType token, int precedence)
+    {
+        Register(token, new PrefixOperatorParselet(precedence));
+    }
+    private void Infix(TokenType token, int precedence, bool isRight = false)
+    {
+        Register(token, new BinaryOperatorParselet(precedence, isRight));
     }
 }
 
