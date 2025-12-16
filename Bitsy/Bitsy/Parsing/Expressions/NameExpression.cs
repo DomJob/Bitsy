@@ -1,4 +1,5 @@
 using Bitsy.Lexing;
+using Bitsy.Reading;
 
 namespace Bitsy.Parsing.Expressions;
 
@@ -20,4 +21,6 @@ public class NameExpression : Expression
         
         return Name.Literal + templates;
     }
+    
+    public new Position Position => Name.Position;
 }

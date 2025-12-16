@@ -39,6 +39,7 @@ public class Parser
     public Expression ParseExpression(int precedence)
     {
         var token = Consume();
+        var position = token.Position;
         if (!prefixParselets.TryGetValue(token.Type, out var prefix))
             throw new ParserException("Could not parse token", token);
 
@@ -51,7 +52,8 @@ public class Parser
             var infix = infixParselets[token.Type];
             left = infix.Parse(this, left, token);
         }
-
+        
+        left.Position = position;
         return left;
     }
 
@@ -108,21 +110,4 @@ public class Parser
     {
         Register(token, new BinaryOperatorParselet(precedence, isRight));
     }
-}
-
-public class ParserException : Exception
-{
-    public ParserException(string message, Token token)
-    {
-        Message = message;
-        Token = token;
-    }
-
-    public ParserException(string message)
-    {
-        Message = message;
-    }
-
-    public string Message { get; }
-    public Token? Token { get; }
 }
