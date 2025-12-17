@@ -1,5 +1,6 @@
 namespace Bitsy.Evaluating;
 
-public class Type
+public abstract class Type
 {
+    public abstract List<Bit> ToBits();
 }

@@ -25,4 +25,8 @@
         <ProjectReference Include="..\Bitsy\Bitsy.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Parsing\" />
+    </ItemGroup>
+
 </Project>

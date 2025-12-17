@@ -4,7 +4,7 @@ using Bitsy.Reading;
 
 namespace Bitsy.Parsing;
 
-public class ExpressionParsingTests
+public class ParserTests
 {
     private Expression expression;
 
