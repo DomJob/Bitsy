@@ -5,19 +5,18 @@ namespace Bitsy.Parsing.Parselets;
 
 public class BinaryOperatorParselet : InfixParselet
 {
-    private readonly bool isRight;
-
-    public BinaryOperatorParselet(int precedence, bool isRight = false)
+    public BinaryOperatorParselet(int precedence)
     {
         Precedence = precedence;
-        this.isRight = isRight;
     }
 
     public int Precedence { get; }
 
     public Expression Parse(Parser parser, Expression left, Token token)
     {
-        var right = parser.ParseExpression(Precedence - (isRight ? 1 : 0));
+        var right = token.Type == TokenType.As
+            ? parser.ParseType(false)
+            : parser.ParseExpression(Precedence);
         return new BinaryExpression(left, token, right);
     }
 }

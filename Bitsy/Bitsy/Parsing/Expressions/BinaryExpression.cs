@@ -14,7 +14,7 @@ public class BinaryExpression : Expression
             throw new SyntaxError("Assignment must target an identifier", Left.Position);
         if (Operation.Type == TokenType.Dot && Right.GetType() != typeof(NameExpression))
             throw new SyntaxError("Object accessor must be an identifier", Right.Position);
-        if (Operation.Type == TokenType.As && Right.GetType() != typeof(TypeExpression))
+        if (Operation.Type == TokenType.As && !Right.GetType().IsSubclassOf(typeof(TypeExpression)))
             throw new SyntaxError("Casting must be to a proper type", Right.Position);
     }
 

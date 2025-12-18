@@ -30,28 +30,33 @@ public class Parser
 
     public Expression ParseStatement()
     {
-        var firstToken = Consume();
+        if (Peek().Type == TokenType.Return)
+            return ParseReturnStatement();
+        if (Peek().Type != TokenType.Identifier)
+            throw new ParserException("Unexpected token at start of statement", Peek());
 
-        if (firstToken.Type == TokenType.Return)
-            return new UnaryExpression(firstToken, ParseExpression());
-
-        var nameExpr = new NameExpression(firstToken);
-
-        var nextToken = Peek();
-
-        switch (nextToken.Type)
+        switch (Peek(2).Type)
         {
             case TokenType.Assignment:
-                return new BinaryExpression(nameExpr, Consume(), ParseExpression());
-            case TokenType.LeftParenthesis: // Function declaration
-                Consume();
-                return ParseFunctionDeclaration(nameExpr);
-            case TokenType.LeftBrace: // Non-generic type definition
-            case TokenType.LeftAngle: // Generic type definition
-                return ParseTypeDefinition(nameExpr);
+                return ParseAssignment();
+            case TokenType.LeftParenthesis:
+                return ParseFunctionDeclaration();
+            case TokenType.LeftBrace:
+            case TokenType.LeftAngle:
+                return ParseTypeDefinition();
+            default:
+                throw new ParserException("Unexpected token following identifier in start of statement", Peek());
         }
+    }
 
-        throw new ParserException("Unexpected token in start of statement", firstToken);
+    private BinaryExpression ParseAssignment()
+    {
+        return new BinaryExpression(ParseName(), Consume(), ParseExpression());
+    }
+
+    private UnaryExpression ParseReturnStatement()
+    {
+        return new UnaryExpression(Consume(TokenType.Return), ParseExpression());
     }
 
     public TypeExpression ParseType(bool unionPossible = true)
@@ -103,8 +108,9 @@ public class Parser
         return left;
     }
 
-    private TypeDeclaration ParseTypeDefinition(NameExpression name)
+    private TypeDeclaration ParseTypeDefinition()
     {
+        var name = ParseName();
         List<TypeExpression> templates = [];
 
         if (Peek().Type == TokenType.LeftAngle)
@@ -130,14 +136,17 @@ public class Parser
         return new TypeDeclaration(name, templates, definition);
     }
 
-    private FunctionDeclaration ParseFunctionDeclaration(NameExpression name)
+    private FunctionDeclaration ParseFunctionDeclaration()
     {
+        var name = ParseName();
+        Consume(TokenType.LeftParenthesis);
         List<(TypeExpression, NameExpression)> arguments = [];
 
         while (true)
         {
             if (Match(TokenType.RightParenthesis)) break;
             arguments.Add((ParseType(), ParseName()));
+            if (Match(TokenType.RightParenthesis)) break;
             Consume(TokenType.Comma);
         }
 
@@ -185,9 +194,9 @@ public class Parser
         return 0;
     }
 
-    private Token Peek()
+    private Token Peek(int n = 1)
     {
-        return lexer.Peek();
+        return lexer.Peek(n);
     }
 
     private Token Consume()
@@ -226,8 +235,8 @@ public class Parser
         Register(token, new PrefixOperatorParselet(precedence));
     }
 
-    private void Infix(TokenType token, int precedence, bool isRight = false)
+    private void Infix(TokenType token, int precedence)
     {
-        Register(token, new BinaryOperatorParselet(precedence, isRight));
+        Register(token, new BinaryOperatorParselet(precedence));
     }
 }

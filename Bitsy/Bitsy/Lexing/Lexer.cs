@@ -4,23 +4,26 @@ namespace Bitsy.Lexing;
 
 public class Lexer
 {
+    private readonly Queue<Token> peeked = new();
     private readonly IReader reader;
-    private Token? peeked;
 
     public Lexer(IReader reader)
     {
         this.reader = reader;
+        while (peeked.Count < 5)
+            peeked.Enqueue(Consume());
     }
 
     public Token Next()
     {
-        if (peeked != null)
-        {
-            var token = peeked;
-            peeked = null;
-            return token;
-        }
+        var token = peeked.Dequeue();
+        peeked.Enqueue(Consume());
 
+        return token;
+    }
+
+    private Token Consume()
+    {
         if (!reader.HasMore()) return new Token(TokenType.End, reader.GetPosition());
 
         var literal = reader.Read();
@@ -64,7 +67,7 @@ public class Lexer
                 if (c == '*' && reader.Peek() == '/')
                 {
                     reader.Read();
-                    return Next();
+                    return Consume();
                 }
 
                 if (c == '\0') return new Token(TokenType.Illegal, reader.GetPosition(), literal.ToString());
@@ -78,7 +81,7 @@ public class Lexer
             while (true)
             {
                 var c1 = reader.Read();
-                if (c1 == '\n') return Next();
+                if (c1 == '\n') return Consume();
                 if (c1 == '\0') return new Token(TokenType.End, initialPos, literal.ToString());
             }
         }
@@ -87,7 +90,7 @@ public class Lexer
         {
             var initialPos = reader.GetPosition();
             while (IsWhitespace(reader.Peek())) reader.Read();
-            return Next();
+            return Consume();
         }
 
         if (IsValidIdentifier(literal))
@@ -117,9 +120,8 @@ public class Lexer
         return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
     }
 
-    public Token Peek()
+    public Token Peek(int n = 1)
     {
-        if (peeked == null) peeked = Next();
-        return peeked;
+        return peeked.Skip(n - 1).First();
     }
 }
