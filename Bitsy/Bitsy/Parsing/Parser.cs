@@ -60,10 +60,7 @@ public class Parser
         switch (token.Type)
         {
             case TokenType.Identifier:
-                var templates = ParseTemplates();
-
-                left = new SimpleTypeExpression(token, templates);
-
+                left = new SimpleTypeExpression(token, ParseTemplates());
                 break;
             case TokenType.LeftParenthesis when Match(TokenType.RightParenthesis):
                 left = new UnionTypeExpression([]);
@@ -71,8 +68,6 @@ public class Parser
             case TokenType.LeftParenthesis:
                 left = ParseTypeSignature();
                 Consume(TokenType.RightParenthesis);
-                break;
-            case TokenType.RightParenthesis:
                 break;
             default:
                 throw new ParserException("Unexpected token when parsing type", token);
@@ -88,7 +83,7 @@ public class Parser
 
         if (Match(TokenType.Arrow)) left = new FunctionTypeExpression(left!, ParseTypeSignature());
 
-        return left!;
+        return left;
     }
 
     public List<TypeExpression> ParseTemplates(bool ignoreCheck = false)
