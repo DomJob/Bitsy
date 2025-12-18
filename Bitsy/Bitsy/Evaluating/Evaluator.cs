@@ -1,17 +1,27 @@
 using Bitsy.Parsing;
+using Bitsy.Parsing.Expressions;
 
 namespace Bitsy.Evaluating;
 
 public class Evaluator
 {
-    private Environment environment;
-
-    public Evaluator(Environment environment)
+    public Type ResolveType(Expression expression)
     {
-        this.environment = environment;
+        throw new NotImplementedException();
     }
 
-    public void Evaluate(Expression expression)
+    public void Load(Parser parser)
     {
+        throw new NotImplementedException();
+    }
+
+    public void LoadExpression(Expression expression)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Symbol Evaluate(Expression expression)
+    {
+        throw new NotImplementedException();
     }
 }

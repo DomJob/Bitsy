@@ -3,7 +3,6 @@ using Bitsy.Lexing;
 using Bitsy.Parsing;
 using Bitsy.Parsing.Expressions;
 using Bitsy.Reading;
-using Environment = Bitsy.Evaluating.Environment;
 
 namespace Bitsy;
 
@@ -17,7 +16,7 @@ public class Program
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
 
-        var environment = new Environment();
+        var environment = new Evaluator();
 
         environment.Load(parser);
         

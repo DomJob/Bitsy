@@ -1,3 +1,5 @@
+using Bitsy.Evaluating;
+
 namespace Bitsy;
 
 public class ProgramTests
@@ -13,6 +15,7 @@ public class ProgramTests
 
         var output = new Program().RunCode(code);
         
-        Console.Write(code);
+        Assert.That(output.Count, Is.EqualTo(1));
+        Assert.That(output.First(), Is.EqualTo(Bit.Zero));
     }
 }

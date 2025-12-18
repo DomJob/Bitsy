@@ -357,7 +357,23 @@ public class ParserTests
 
         Verify<FunctionDeclaration>("someFunc(Bit->Bit a) { b = a() }");
     }
+    
+    [Test]
+    public void FunctionDeclaration_WithNestedInputFunctionalArg()
+    {
+        ParseExpression("someFunc((Bit->Bit)->Bit a) { b = a() }");
 
+        Verify<FunctionDeclaration>("someFunc((Bit->Bit)->Bit a) { b = a() }");
+    }
+
+    [Test]
+    public void FunctionDeclaration_WithNestedOutputFunctionalArg()
+    {
+        ParseExpression("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+
+        Verify<FunctionDeclaration>("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+    }
+    
     [Test]
     public void FunctionDeclaration_WithTwoFunctionalArgs()
     {
