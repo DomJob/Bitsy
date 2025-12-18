@@ -60,16 +60,7 @@ public class Parser
         switch (token.Type)
         {
             case TokenType.Identifier:
-                List<SimpleTypeExpression> templates = [];
-
-                if (Match(TokenType.LeftAngle))
-                    while (true)
-                    {
-                        var templateToken = Consume(TokenType.Identifier);
-                        templates.Add(new SimpleTypeExpression(templateToken));
-                        if (Match(TokenType.RightAngle)) break;
-                        Consume(TokenType.Comma);
-                    }
+                var templates = ParseTemplates();
 
                 left = new SimpleTypeExpression(token, templates);
 
@@ -97,34 +88,41 @@ public class Parser
 
         if (Match(TokenType.Arrow)) left = new FunctionTypeExpression(left!, ParseType());
 
-        return left;
+        return left!;
+    }
+
+    public List<TypeExpression> ParseTemplates(bool ignoreCheck = false)
+    {
+        if (!ignoreCheck && !Match(TokenType.LeftAngle)) return [];
+
+        List<TypeExpression> templates = [];
+        do
+        {
+            templates.Add(ParseType(false));
+            if (Match(TokenType.RightAngle)) break;
+        } while (Match(TokenType.Comma));
+
+        return templates;
     }
 
     private Expression ParseTypeDefinition()
     {
         var name = ParseName();
-        List<TypeExpression> templates = [];
-
-        if (NextTokenIs(TokenType.LeftAngle))
-        {
-            Consume();
-            while (true)
-            {
-                templates.Add(ParseType(false));
-                if (Match(TokenType.RightAngle)) break;
-                Consume(TokenType.Comma);
-            }
-        }
+        var templates = ParseTemplates();
 
         if (!Match(TokenType.LeftBrace))
         {
-            var actualType =
-                new SimpleTypeExpression(name.Name, templates.Select(t => (SimpleTypeExpression)t).ToList());
+            var actualType = new SimpleTypeExpression(name.Name, templates);
             if (Match(TokenType.Arrow))
                 return new FunctionTypeExpression(actualType, ParseType());
             return actualType;
         }
 
+        return new TypeDeclaration(name, templates, ParseTypeBody());
+    }
+
+    private List<(TypeExpression Type, NameExpression Name)> ParseTypeBody()
+    {
         List<(TypeExpression Type, NameExpression Name)> definition = [];
 
         while (true)
@@ -133,7 +131,7 @@ public class Parser
             definition.Add((ParseType(), ParseName()));
         }
 
-        return new TypeDeclaration(name, templates, definition);
+        return definition;
     }
 
     private Expression ParseFunction()
@@ -167,7 +165,7 @@ public class Parser
     {
         if (Match(TokenType.RightParenthesis))
             return new FunctionDeclaration(name, arguments, ParseFunctionBody());
-        
+
         if (NextTokenIs(TokenType.Comma))
             do
             {

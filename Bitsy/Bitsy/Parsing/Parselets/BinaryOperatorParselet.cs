@@ -33,16 +33,8 @@ public class BinaryOperatorParselet : InfixParselet
         {
             if (left is not NameExpression nameExpression)
                 throw new ParserException("Expected name, got " + left.GetType().Name);
-            List<SimpleTypeExpression> templates = [];
-            while (true)
-            {
-                var templateToken = parser.Consume(TokenType.Identifier);
-                templates.Add(new SimpleTypeExpression(templateToken));
-                if (parser.Match(TokenType.RightAngle)) break;
-                parser.Consume(TokenType.Comma);
-            }
 
-            return new SimpleTypeExpression(nameExpression.Name, templates);
+            return new SimpleTypeExpression(nameExpression.Name, parser.ParseTemplates(true));
         }
 
         var right = token.Type == TokenType.As

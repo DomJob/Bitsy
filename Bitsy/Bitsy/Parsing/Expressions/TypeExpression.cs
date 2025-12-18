@@ -8,14 +8,14 @@ public abstract class TypeExpression : Expression
 
 public class SimpleTypeExpression : TypeExpression
 {
-    public SimpleTypeExpression(Token name, List<SimpleTypeExpression>? templates = null)
+    public SimpleTypeExpression(Token name, List<TypeExpression>? templates = null)
     {
         Name = name;
         Templates = templates ?? [];
     }
 
     public Token Name { get; }
-    public List<SimpleTypeExpression> Templates { get; }
+    public List<TypeExpression> Templates { get; }
 
     public override string ToString()
     {
