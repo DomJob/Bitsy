@@ -20,11 +20,11 @@ public class Parser
     
     public Expression ParseStatement()
     {
-        if (Peek().Type == TokenType.Return)
+        if (NextTokenIs(TokenType.Return))
             return ParseReturnStatement();
-        if (Peek().Type != TokenType.Identifier)
+        if(!NextTokenIs(TokenType.Identifier))
             return ParseExpression();
-
+        
         switch (Peek(2).Type)
         {
             case TokenType.Assignment:
@@ -34,8 +34,10 @@ public class Parser
             case TokenType.LeftBrace:
             case TokenType.LeftAngle:
                 return ParseTypeDefinition();
+            case TokenType.Arrow:
+                return ParseType();
             default:
-                throw new ParserException("Unexpected token following identifier in start of statement", Peek());
+                return ParseExpression();
         }
     }
 
@@ -85,7 +87,7 @@ public class Parser
                 throw new ParserException("Unexpected token when parsing type", token);
         }
 
-        if (unionPossible && Peek().Type == TokenType.Comma)
+        if (unionPossible && NextTokenIs(TokenType.Comma))
         {
             var types = new List<TypeExpression> { left! };
             while (Match(TokenType.Comma))
@@ -103,7 +105,7 @@ public class Parser
         var name = ParseName();
         List<TypeExpression> templates = [];
 
-        if (Peek().Type == TokenType.LeftAngle)
+        if (NextTokenIs(TokenType.LeftAngle))
         {
             Consume();
             while (true)
@@ -193,11 +195,12 @@ public class Parser
     {
         return lexer.Next();
     }
+    
+    private bool NextTokenIs(TokenType tokenType) => Peek().Type == tokenType;
 
     public bool Match(TokenType expected)
     {
-        var type = Peek().Type;
-        if (type != expected) return false;
+        if(!NextTokenIs(expected)) return false;
         Consume();
         return true;
     }

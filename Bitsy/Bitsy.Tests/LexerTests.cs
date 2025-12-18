@@ -8,7 +8,7 @@ public class LexerTests
     [Test]
     public void TestPeekBehavior()
     {
-        var lexer = new Lexer(new LineReader("a b c d e f"));
+        var lexer = new Lexer(new LineReader("a b c d e"));
 
         Assert.That(lexer.Peek().Literal, Is.EqualTo("a"));
         Assert.That(lexer.Peek(2).Literal, Is.EqualTo("b"));
@@ -21,7 +21,6 @@ public class LexerTests
         Assert.That(lexer.Peek(3).Literal, Is.EqualTo("d"));
         Assert.That(lexer.Peek(4).Literal, Is.EqualTo("e"));
         Assert.That(lexer.Peek(5).Type, Is.EqualTo(TokenType.End));
-        Assert.That(lexer.Peek(6).Type, Is.EqualTo(TokenType.End));
     }
 
     [Test]

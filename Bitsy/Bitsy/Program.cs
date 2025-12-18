@@ -41,12 +41,13 @@ public class Program
 
             try
             {
-                var expression = parser.ParseExpression();
+                var expression = parser.ParseStatement();
                 Console.WriteLine(expression.GetType() + " : " + expression);
             }
             catch (ParserException e)
             {
                 Console.WriteLine($"Parsing error: {e.Message} - {e.Token}");
+                Console.WriteLine(e.StackTrace);
             }
             catch (SyntaxError e)
             {

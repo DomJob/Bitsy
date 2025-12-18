@@ -122,6 +122,6 @@ public class Lexer
 
     public Token Peek(int n = 1)
     {
-        return peeked.Skip(n - 1).First();
+        return peeked.Skip(n - 1).FirstOrDefault() ?? new Token(TokenType.End, reader.GetPosition(), string.Empty);
     }
 }
