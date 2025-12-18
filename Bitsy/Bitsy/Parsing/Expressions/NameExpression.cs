@@ -8,7 +8,7 @@ public class NameExpression : Expression
     public static readonly Expression Main = new NameExpression(Token.Main);
     public static readonly Expression Zero = new NameExpression(Token.Zero);
     public static readonly Expression One = new NameExpression(Token.One);
-    
+
     public NameExpression(Token name)
     {
         Name = name;

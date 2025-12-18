@@ -34,7 +34,7 @@ public class Parser
 
         if (firstToken.Type == TokenType.Return)
             return new UnaryExpression(firstToken, ParseExpression());
-        
+
         var nameExpr = new NameExpression(firstToken);
 
         var nextToken = Peek();
@@ -44,29 +44,28 @@ public class Parser
             case TokenType.Assignment:
                 return new BinaryExpression(nameExpr, Consume(), ParseExpression());
             case TokenType.LeftParenthesis: // Function declaration
+                Consume();
                 return ParseFunctionDeclaration(nameExpr);
             case TokenType.LeftBrace: // Non-generic type definition
-                return ParseTypeDefinition(nameExpr);
             case TokenType.LeftAngle: // Generic type definition
-                return ParseGenericTypeDefinition(nameExpr);
+                return ParseTypeDefinition(nameExpr);
         }
-        
+
         throw new ParserException("Unexpected token in start of statement", firstToken);
     }
 
-    public TypeExpression ParseType()
+    public TypeExpression ParseType(bool unionPossible = true)
     {
         var token = Consume();
 
         TypeExpression left = null;
-        
+
         switch (token.Type)
         {
             case TokenType.Identifier:
                 List<SimpleTypeExpression> templates = [];
-                
+
                 if (Match(TokenType.LeftAngle))
-                {
                     while (true)
                     {
                         var templateToken = Consume(TokenType.Identifier);
@@ -74,7 +73,7 @@ public class Parser
                         if (Match(TokenType.RightAngle)) break;
                         Consume(TokenType.Comma);
                     }
-                }
+
                 left = new SimpleTypeExpression(token, templates);
 
                 break;
@@ -91,40 +90,72 @@ public class Parser
                 throw new ParserException("Unexpected token when parsing type", token);
         }
 
-        if (Peek().Type == TokenType.Comma)
+        if (unionPossible && Peek().Type == TokenType.Comma)
         {
-            var types = new List<TypeExpression> { left };
-            while(Match(TokenType.Comma))
+            var types = new List<TypeExpression> { left! };
+            while (Match(TokenType.Comma))
                 types.Add(ParseType());
             left = new UnionTypeExpression(types);
         }
 
-        if (Match(TokenType.Arrow))
-        {
-            left = new FunctionTypeExpression(left, ParseType());
-        }
-            
-            
+        if (Match(TokenType.Arrow)) left = new FunctionTypeExpression(left!, ParseType());
 
         return left;
     }
 
-    private TypeDeclaration ParseGenericTypeDefinition(NameExpression name)
-    {
-        throw new NotImplementedException();
-    }
-
     private TypeDeclaration ParseTypeDefinition(NameExpression name)
     {
-        throw new NotImplementedException();
+        List<TypeExpression> templates = [];
+
+        if (Peek().Type == TokenType.LeftAngle)
+        {
+            Consume();
+            while (true)
+            {
+                templates.Add(ParseType(false));
+                if (Match(TokenType.RightAngle)) break;
+                Consume(TokenType.Comma);
+            }
+        }
+
+        Consume(TokenType.LeftBrace);
+        List<(TypeExpression Type, NameExpression Name)> definition = [];
+
+        while (true)
+        {
+            if (Match(TokenType.RightBrace)) break;
+            definition.Add((ParseType(), ParseName()));
+        }
+
+        return new TypeDeclaration(name, templates, definition);
     }
 
     private FunctionDeclaration ParseFunctionDeclaration(NameExpression name)
     {
-        throw new NotImplementedException();
+        List<(TypeExpression, NameExpression)> arguments = [];
+
+        while (true)
+        {
+            if (Match(TokenType.RightParenthesis)) break;
+            arguments.Add((ParseType(), ParseName()));
+            Consume(TokenType.Comma);
+        }
+
+        Consume(TokenType.LeftBrace);
+
+        List<Expression> body = [];
+        while (!Match(TokenType.RightBrace))
+            body.Add(ParseStatement());
+
+        return new FunctionDeclaration(name, arguments, body);
     }
 
-    public Expression ParseExpression(int precedence=0)
+    private NameExpression ParseName()
+    {
+        return new NameExpression(Consume(TokenType.Identifier));
+    }
+
+    public Expression ParseExpression(int precedence = 0)
     {
         var token = Consume();
         var position = token.Position;

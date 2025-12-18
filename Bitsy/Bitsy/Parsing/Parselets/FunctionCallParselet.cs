@@ -9,9 +9,9 @@ public class FunctionCallParselet : InfixParselet
     {
         var args = new List<Expression>();
 
-        if(parser.Match(TokenType.RightParenthesis))
+        if (parser.Match(TokenType.RightParenthesis))
             return new CallExpression(left, args);
-        
+
         do
         {
             args.Add(parser.ParseExpression());

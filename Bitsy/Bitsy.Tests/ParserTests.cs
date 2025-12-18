@@ -346,33 +346,33 @@ public class ParserTests
     [Test]
     public void FunctionDeclaration_WithFunctionalArg()
     {
-        ParseExpression("someFunc(Bit->Bit a) { b = a() }");
+        ParseStatement("someFunc(Bit->Bit a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->Bit a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc((Bit->Bit) a) { b = a() }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithNestedInputFunctionalArg()
     {
-        ParseExpression("someFunc((Bit->Bit)->Bit a) { b = a() }");
+        ParseStatement("someFunc((Bit->Bit)->Bit a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc((Bit->Bit)->Bit a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc(((Bit->Bit)->Bit) a) { b = a() }");
     }
 
     [Test]
     public void FunctionDeclaration_WithNestedOutputFunctionalArg()
     {
-        ParseExpression("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+        ParseStatement("someFunc(Bit->(Bit->Bit) a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc((Bit->(Bit->Bit)) a) { b = a() }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithTwoFunctionalArgs()
     {
-        ParseExpression("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
+        ParseStatement("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->Bit a, ()->Bit b) { c = (a(1) ^ b()) }");
+        Verify<FunctionDeclaration>("someFunc((Bit->Bit) a, (()->Bit) b) { c = (a(1) ^ b()) }");
     }
 
     [Test]
@@ -382,7 +382,7 @@ public class ParserTests
 
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
-    
+
     [Test]
     public void TypeExpression_Simple()
     {
@@ -398,7 +398,7 @@ public class ParserTests
 
         Verify<TypeExpression>("(a, b)");
     }
-    
+
     [Test]
     public void TypeExpression_SimpleFunctionalType()
     {
@@ -414,7 +414,7 @@ public class ParserTests
 
         Verify<FunctionTypeExpression>("(()->a)");
     }
-    
+
     [Test]
     public void TypeExpression_EmptyOutput()
     {
@@ -430,7 +430,7 @@ public class ParserTests
 
         Verify<FunctionTypeExpression>("((a, b)->c)");
     }
-    
+
     [Test]
     public void TypeExpression_Associativity()
     {
@@ -438,7 +438,7 @@ public class ParserTests
 
         Verify<FunctionTypeExpression>("(a->(b->c))");
     }
-    
+
     [Test]
     public void TypeExpression_NestedInputs()
     {
@@ -446,21 +446,21 @@ public class ParserTests
 
         Verify<FunctionTypeExpression>("((a, (b->c))->d)");
     }
-    
+
     [Test]
     public void TypeExpression_Templated()
     {
         ParseType("SomeType<T>");
         Verify<TypeExpression>("SomeType<T>");
     }
-    
+
     [Test]
     public void TypeExpression_TemplatedInFunc()
     {
         ParseType("SomeType<T>->Output");
         Verify<TypeExpression>("(SomeType<T>->Output)");
     }
-    
+
     [Test]
     public void TypeExpression_TemplatedTwice()
     {
@@ -514,7 +514,7 @@ public class ParserTests
     public void TypeDeclaration_WithCallableBody()
     {
         ParseStatement("SomeType<T> { T->List<Bit> bits }");
-        Verify<TypeDeclaration>("SomeType<T> { T->List<Bit> bits }");
+        Verify<TypeDeclaration>("SomeType<T> { (T->List<Bit>) bits }");
     }
 
     [Test]
@@ -557,7 +557,7 @@ public class ParserTests
         expression = parser.ParseExpression();
         return expression;
     }
-    
+
     private Expression ParseStatement(string code)
     {
         var reader = new StringCodeReader(code);
@@ -566,7 +566,7 @@ public class ParserTests
         expression = parser.ParseStatement();
         return expression;
     }
-    
+
     private Expression ParseType(string code)
     {
         var reader = new StringCodeReader(code);
