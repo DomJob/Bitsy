@@ -14,26 +14,16 @@ public class Parser
     {
         this.lexer = lexer;
 
-        Register(TokenType.LeftBrace, new ObjectParselet());
-        Register(TokenType.Identifier, new NameParselet());
-        Register(TokenType.LeftParenthesis, new GroupParselet());
-        Register(TokenType.LeftParenthesis, new FunctionCallParselet());
-        Register(TokenType.Question, new ConditionalParselet());
-        Prefix(TokenType.Return, BindingPower.Return);
-        Prefix(TokenType.Not, BindingPower.Not);
-        Infix(TokenType.And, BindingPower.And);
-        Infix(TokenType.Or, BindingPower.Or);
-        Infix(TokenType.Xor, BindingPower.Xor);
-        Infix(TokenType.Dot, BindingPower.Dot);
-        Infix(TokenType.As, BindingPower.As);
+        RegisterPrefixTokens();
+        RegisterInfixTokens();
     }
-
+    
     public Expression ParseStatement()
     {
         if (Peek().Type == TokenType.Return)
             return ParseReturnStatement();
         if (Peek().Type != TokenType.Identifier)
-            throw new ParserException("Unexpected token at start of statement", Peek());
+            return ParseExpression();
 
         switch (Peek(2).Type)
         {
@@ -51,7 +41,7 @@ public class Parser
 
     private BinaryExpression ParseAssignment()
     {
-        return new BinaryExpression(ParseName(), Consume(), ParseExpression());
+        return new BinaryExpression(ParseName(), Consume(TokenType.Assignment), ParseExpression());
     }
 
     private UnaryExpression ParseReturnStatement()
@@ -220,6 +210,27 @@ public class Parser
         return Consume();
     }
 
+    private void RegisterInfixTokens()
+    {
+        Register(TokenType.LeftParenthesis, new FunctionCallParselet());
+        Register(TokenType.Question, new ConditionalParselet());
+        Infix(TokenType.And, BindingPower.And);
+        Infix(TokenType.Or, BindingPower.Or);
+        Infix(TokenType.Xor, BindingPower.Xor);
+        Infix(TokenType.Dot, BindingPower.Dot);
+        Infix(TokenType.As, BindingPower.As);
+    }
+
+    private void RegisterPrefixTokens()
+    {
+        Register(TokenType.LeftParenthesis, new GroupParselet());
+        Register(TokenType.LeftBrace, new ObjectParselet());
+        Register(TokenType.Identifier, new NameParselet());
+        Prefix(TokenType.Return, BindingPower.Return);
+        Prefix(TokenType.Not, BindingPower.Not);
+    }
+
+    
     private void Register(TokenType token, PrefixParselet parselet)
     {
         prefixParselets[token] = parselet;
