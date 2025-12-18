@@ -11,7 +11,7 @@ public class GroupParselet : PrefixParselet
         {
             parser.Consume(TokenType.Arrow);
             var input = new UnionTypeExpression([]);
-            var output = parser.ParseType();
+            var output = parser.ParseTypeSignature();
             return new FunctionTypeExpression(input, output);
         }
 
@@ -21,7 +21,7 @@ public class GroupParselet : PrefixParselet
             if (parser.Match(TokenType.Arrow))
             {
                 var input = new SimpleTypeExpression(nameExpr.Name, []);
-                var output = parser.ParseType();
+                var output = parser.ParseTypeSignature();
                 return new FunctionTypeExpression(input, output);
             }
 
@@ -30,7 +30,7 @@ public class GroupParselet : PrefixParselet
                 List<TypeExpression> types = [new SimpleTypeExpression(nameExpr.Name, [])];
                 while (true)
                 {
-                    types.Add(parser.ParseType());
+                    types.Add(parser.ParseTypeSignature());
                     if (parser.Match(TokenType.RightParenthesis)) break;
                     parser.Consume(TokenType.Comma);
                 }

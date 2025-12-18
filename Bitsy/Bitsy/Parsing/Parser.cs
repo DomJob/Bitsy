@@ -35,7 +35,7 @@ public class Parser
             case TokenType.LeftAngle:
                 return ParseTypeDefinition();
             case TokenType.Arrow:
-                return ParseType();
+                return ParseTypeSignature();
             default:
                 return ParseExpression();
         }
@@ -51,7 +51,7 @@ public class Parser
         return new UnaryExpression(Consume(TokenType.Return), ParseExpression());
     }
 
-    public TypeExpression ParseType(bool unionPossible = true)
+    public TypeExpression ParseTypeSignature(bool forbidUnions = false)
     {
         var token = Consume();
 
@@ -69,7 +69,7 @@ public class Parser
                 left = new UnionTypeExpression([]);
                 break;
             case TokenType.LeftParenthesis:
-                left = ParseType();
+                left = ParseTypeSignature();
                 Consume(TokenType.RightParenthesis);
                 break;
             case TokenType.RightParenthesis:
@@ -78,15 +78,15 @@ public class Parser
                 throw new ParserException("Unexpected token when parsing type", token);
         }
 
-        if (unionPossible && NextTokenIs(TokenType.Comma))
+        if (!forbidUnions && NextTokenIs(TokenType.Comma))
         {
             var types = new List<TypeExpression> { left! };
             while (Match(TokenType.Comma))
-                types.Add(ParseType());
+                types.Add(ParseTypeSignature());
             left = new UnionTypeExpression(types);
         }
 
-        if (Match(TokenType.Arrow)) left = new FunctionTypeExpression(left!, ParseType());
+        if (Match(TokenType.Arrow)) left = new FunctionTypeExpression(left!, ParseTypeSignature());
 
         return left!;
     }
@@ -98,7 +98,7 @@ public class Parser
         List<TypeExpression> templates = [];
         do
         {
-            templates.Add(ParseType(false));
+            templates.Add(ParseTypeSignature(true));
             if (Match(TokenType.RightAngle)) break;
         } while (Match(TokenType.Comma));
 
@@ -114,7 +114,7 @@ public class Parser
         {
             var actualType = new SimpleTypeExpression(name.Name, templates);
             if (Match(TokenType.Arrow))
-                return new FunctionTypeExpression(actualType, ParseType());
+                return new FunctionTypeExpression(actualType, ParseTypeSignature());
             return actualType;
         }
 
@@ -128,7 +128,7 @@ public class Parser
         while (true)
         {
             if (Match(TokenType.RightBrace)) break;
-            definition.Add((ParseType(), ParseName()));
+            definition.Add((ParseTypeSignature(), ParseName()));
         }
 
         return definition;
@@ -170,7 +170,7 @@ public class Parser
             do
             {
                 Consume(TokenType.Comma);
-                arguments.Add((ParseType(), ParseName()));
+                arguments.Add((ParseTypeSignature(), ParseName()));
             } while (!Match(TokenType.RightParenthesis));
 
         return new FunctionDeclaration(name, arguments, ParseFunctionBody());

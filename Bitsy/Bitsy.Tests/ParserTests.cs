@@ -414,6 +414,14 @@ public class ParserTests
     }
 
     [Test]
+    public void TypeExpression_EmptyInputTemplatedOutput()
+    {
+        ParseStatement("()->SomeType<T>");
+
+        Verify<FunctionTypeExpression>("(()->SomeType<T>)");
+    }
+
+    [Test]
     public void TypeExpression_EmptyOutput()
     {
         ParseStatement("a->()");

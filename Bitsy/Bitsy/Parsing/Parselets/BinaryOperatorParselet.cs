@@ -19,11 +19,11 @@ public class BinaryOperatorParselet : InfixParselet
             if (left is NameExpression name)
             {
                 var type = new SimpleTypeExpression(name.Name, []);
-                return new FunctionTypeExpression(type, parser.ParseType());
+                return new FunctionTypeExpression(type, parser.ParseTypeSignature());
             }
             else if (left is TypeExpression type)
             {
-                return new FunctionTypeExpression(type, parser.ParseType());
+                return new FunctionTypeExpression(type, parser.ParseTypeSignature());
             }
 
             throw new ParserException("Expected type, got " + left.GetType().Name);
@@ -38,7 +38,7 @@ public class BinaryOperatorParselet : InfixParselet
         }
 
         var right = token.Type == TokenType.As
-            ? parser.ParseType(false)
+            ? parser.ParseTypeSignature(true)
             : parser.ParseExpression(Precedence);
         return new BinaryExpression(left, token, right);
     }
