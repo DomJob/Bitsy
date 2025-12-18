@@ -488,14 +488,14 @@ public class ParserTests
         ParseStatement("SomeType<T> { T b }");
         Verify<TypeDeclaration>("SomeType<T> { T b }");
     }
-    
+
     [Test]
     public void TypeDeclaration_Template_UnionQuestionMark()
     {
         ParseStatement("SomeType<(T,V)> { T b }");
         Verify<TypeDeclaration>("SomeType<(T, V)> { T b }");
     }
-    
+
     [Test]
     public void TypeDeclaration_RecursiveTemplate()
     {
