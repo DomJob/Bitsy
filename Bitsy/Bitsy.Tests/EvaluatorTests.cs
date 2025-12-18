@@ -39,7 +39,7 @@ public class EvaluatorTests
 
     private Expression ParseExpression(string code)
     {
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
         return parser.ParseExpression();

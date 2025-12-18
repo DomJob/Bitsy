@@ -1,13 +1,13 @@
 namespace Bitsy.Reading;
 
-public class StringCodeReader : IReader
+public class LineReader : IReader
 {
     private readonly string text;
     private int column;
     private int cursor;
     private int line = 1;
 
-    public StringCodeReader(string text)
+    public LineReader(string text)
     {
         this.text = text;
     }
@@ -44,7 +44,7 @@ public class StringCodeReader : IReader
         {
             Column = column,
             Line = line,
-            FileName = "<String>"
+            FileName = "<>"
         };
     }
 }

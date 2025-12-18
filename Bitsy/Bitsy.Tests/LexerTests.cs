@@ -8,7 +8,7 @@ public class LexerTests
     [Test]
     public void TestPeekBehavior()
     {
-        var lexer = new Lexer(new StringCodeReader("a b c d e f"));
+        var lexer = new Lexer(new LineReader("a b c d e f"));
 
         Assert.That(lexer.Peek().Literal, Is.EqualTo("a"));
         Assert.That(lexer.Peek(2).Literal, Is.EqualTo("b"));
@@ -132,7 +132,7 @@ public class LexerTests
 
     private static LexerTestScenario WhenCodeIs(string code)
     {
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         return new LexerTestScenario(new Lexer(reader));
     }
 

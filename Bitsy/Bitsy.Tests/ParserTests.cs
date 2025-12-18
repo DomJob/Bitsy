@@ -565,7 +565,7 @@ public class ParserTests
 
     private Expression ParseExpression(string code)
     {
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
         expression = parser.ParseExpression();
@@ -574,7 +574,7 @@ public class ParserTests
 
     private Expression ParseStatement(string code)
     {
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
         expression = parser.ParseStatement();
@@ -583,7 +583,7 @@ public class ParserTests
 
     private Expression ParseType(string code)
     {
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
         expression = parser.ParseType();

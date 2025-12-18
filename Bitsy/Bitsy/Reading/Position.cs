@@ -8,6 +8,6 @@ public class Position
 
     public override string ToString()
     {
-        return $"in {FileName} - {Line}:{Column}";
+        return $"{FileName} @ {Line}:{Column}";
     }
 }

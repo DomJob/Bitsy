@@ -12,7 +12,7 @@ public class Program
     {
         if (input == null) input = [];
 
-        var reader = new StringCodeReader(code);
+        var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
 
@@ -35,7 +35,7 @@ public class Program
             Console.Write(">>> ");
             var code = Console.ReadLine() ?? "";
 
-            var reader = new StringCodeReader(code);
+            var reader = new LineReader(code);
             var lexer = new Lexer(reader);
             var parser = new Parser(lexer);
 
