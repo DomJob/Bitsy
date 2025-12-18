@@ -4,10 +4,11 @@ namespace Bitsy.Evaluating;
 
 public class Symbol
 {
-    public String Name { get; set; }
+    public string Name { get; set; }
     public Expression Type { get; }
 
-    public List<Bit> ToBits() => [];
-    
-    
+    public List<Bit> ToBits()
+    {
+        return [];
+    }
 }

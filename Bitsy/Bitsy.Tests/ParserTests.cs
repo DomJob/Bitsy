@@ -1,8 +1,9 @@
 using Bitsy.Lexing;
+using Bitsy.Parsing;
 using Bitsy.Parsing.Expressions;
 using Bitsy.Reading;
 
-namespace Bitsy.Parsing;
+namespace Bitsy;
 
 public class ParserTests
 {
@@ -86,14 +87,6 @@ public class ParserTests
         ParseExpression("return ~a as SomeType");
 
         Verify<UnaryExpression>("return (~a as SomeType)");
-    }
-
-    [Test]
-    public void ReturnStatement_Precedence4()
-    {
-        ParseExpression("return a=1");
-
-        Verify<UnaryExpression>("return a = 1");
     }
 
     [Test]
@@ -219,7 +212,7 @@ public class ParserTests
     [Test]
     public void Assignment_Simple()
     {
-        ParseExpression("a = 1");
+        ParseStatement("a = 1");
 
         Verify<BinaryExpression>("a = 1");
     }
@@ -227,7 +220,7 @@ public class ParserTests
     [Test]
     public void Assignment_Complex()
     {
-        ParseExpression("a = a & (b | c) ^ abc(def,ghi)");
+        ParseStatement("a = a & (b | c) ^ abc(def,ghi)");
 
         Verify<BinaryExpression>("a = ((a & (b | c)) ^ abc(def, ghi))");
     }
@@ -235,9 +228,9 @@ public class ParserTests
     [Test]
     public void As_Complex()
     {
-        ParseExpression("a = a & (b | c) ^ abc(def,ghi) as SomeType");
+        ParseExpression("a & (b | c) ^ abc(def,ghi) as SomeType");
 
-        Verify<BinaryExpression>("a = (((a & (b | c)) ^ abc(def, ghi)) as SomeType)");
+        Verify<BinaryExpression>("(((a & (b | c)) ^ abc(def, ghi)) as SomeType)");
     }
 
     [Test]
@@ -259,7 +252,7 @@ public class ParserTests
     [Test]
     public void ExplicitObject_Assignment()
     {
-        ParseExpression("someObject = {a: 1, b: func(arg), c:  abc&d}");
+        ParseStatement("someObject = {a: 1, b: func(arg), c:  abc&d}");
 
         Verify<BinaryExpression>("someObject = {a: 1, b: func(arg), c: (abc & d)}");
     }
@@ -267,7 +260,7 @@ public class ParserTests
     [Test]
     public void ExplicitObject_Assignment_AndCast()
     {
-        ParseExpression("someObject = {a: 1, b: func(arg), c:  abc&d} as Type");
+        ParseStatement("someObject = {a: 1, b: func(arg), c:  abc&d} as Type");
 
         Verify<BinaryExpression>("someObject = ({a: 1, b: func(arg), c: (abc & d)} as Type)");
     }
@@ -275,7 +268,7 @@ public class ParserTests
     [Test]
     public void ExplicitObject_WrongSyntax()
     {
-        VerifyThrows<ParserException>("someObject = {a: 1, b, c:  abc&d} as Type");
+        VerifyThrows<ParserException>("{a: 1, b, c:  abc&d} as Type");
     }
 
     [Test]
@@ -337,7 +330,7 @@ public class ParserTests
     [Test]
     public void FunctionDeclaration_Simplest()
     {
-        ParseExpression("someFunc() { a = 1 }");
+        ParseStatement("someFunc() { a = 1 }");
 
         Verify<FunctionDeclaration>("someFunc() { a = 1 }");
     }
@@ -345,7 +338,7 @@ public class ParserTests
     [Test]
     public void FunctionDeclaration_WithArg()
     {
-        ParseExpression("someFunc(Bit a) { b = a & 1 }");
+        ParseStatement("someFunc(Bit a) { b = a & 1 }");
 
         Verify<FunctionDeclaration>("someFunc(Bit a) { b = (a & 1) }");
     }
@@ -353,39 +346,39 @@ public class ParserTests
     [Test]
     public void FunctionDeclaration_WithFunctionalArg()
     {
-        ParseExpression("someFunc(Bit->Bit a) { b = a() }");
+        ParseStatement("someFunc(Bit->Bit a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->Bit a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc((Bit->Bit) a) { b = a() }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithNestedInputFunctionalArg()
     {
-        ParseExpression("someFunc((Bit->Bit)->Bit a) { b = a() }");
+        ParseStatement("someFunc((Bit->Bit)->Bit a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc((Bit->Bit)->Bit a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc(((Bit->Bit)->Bit) a) { b = a() }");
     }
 
     [Test]
     public void FunctionDeclaration_WithNestedOutputFunctionalArg()
     {
-        ParseExpression("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+        ParseStatement("someFunc(Bit->(Bit->Bit) a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->(Bit->Bit) a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc((Bit->(Bit->Bit)) a) { b = a() }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_WithTwoFunctionalArgs()
     {
-        ParseExpression("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
+        ParseStatement("someFunc(Bit->Bit a, ()->Bit b) { c = a(1) ^ b()  }");
 
-        Verify<FunctionDeclaration>("someFunc(Bit->Bit a, ()->Bit b) { c = (a(1) ^ b()) }");
+        Verify<FunctionDeclaration>("someFunc((Bit->Bit) a, (()->Bit) b) { c = (a(1) ^ b()) }");
     }
 
     [Test]
     public void FunctionDeclaration_WithArgs()
     {
-        ParseExpression("someFunc(Bit a, SomeType b) { c = a & b.idk d=1 }");
+        ParseStatement("someFunc(Bit a, SomeType b) { c = a & b.idk d=1 }");
 
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
@@ -393,81 +386,135 @@ public class ParserTests
     [Test]
     public void TypeExpression_Simple()
     {
-        ParseExpression("a->b");
+        ParseType("a");
 
-        Verify<TypeExpression>("a->b");
+        Verify<TypeExpression>("a");
     }
 
     [Test]
-    public void TypeExpression_Empty()
+    public void TypeExpression_SimpleUnion()
     {
-        ParseExpression("()->a");
+        ParseType("(a,b)");
 
-        Verify<TypeExpression>("()->a");
+        Verify<TypeExpression>("(a, b)");
+    }
+
+    [Test]
+    public void TypeExpression_SimpleFunctionalType()
+    {
+        ParseType("a->b");
+
+        Verify<FunctionTypeExpression>("(a->b)");
+    }
+
+    [Test]
+    public void TypeExpression_EmptyInput()
+    {
+        ParseType("()->a");
+
+        Verify<FunctionTypeExpression>("(()->a)");
+    }
+
+    [Test]
+    public void TypeExpression_EmptyOutput()
+    {
+        ParseType("a->()");
+
+        Verify<FunctionTypeExpression>("(a->())");
     }
 
     [Test]
     public void TypeExpression_TwoInputs()
     {
-        ParseExpression("(a,b)->c");
+        ParseType("(a,b)->c");
 
-        Verify<TypeExpression>("(a, b)->c");
+        Verify<FunctionTypeExpression>("((a, b)->c)");
+    }
+
+    [Test]
+    public void TypeExpression_Associativity()
+    {
+        ParseType("a->b->c");
+
+        Verify<FunctionTypeExpression>("(a->(b->c))");
+    }
+
+    [Test]
+    public void TypeExpression_NestedInputs()
+    {
+        ParseType("(a,(b->c))->d");
+
+        Verify<FunctionTypeExpression>("((a, (b->c))->d)");
+    }
+
+    [Test]
+    public void TypeExpression_Templated()
+    {
+        ParseType("SomeType<T>");
+        Verify<TypeExpression>("SomeType<T>");
+    }
+
+    [Test]
+    public void TypeExpression_TemplatedInFunc()
+    {
+        ParseType("SomeType<T>->Output");
+        Verify<TypeExpression>("(SomeType<T>->Output)");
+    }
+
+    [Test]
+    public void TypeExpression_TemplatedTwice()
+    {
+        ParseType("SomeType<T,V>");
+        Verify<TypeExpression>("SomeType<T, V>");
     }
 
     [Test]
     public void TypeDeclaration_Simple()
     {
-        ParseExpression("SomeType { Bit b }");
+        ParseStatement("SomeType { Bit b }");
         Verify<TypeDeclaration>("SomeType { Bit b }");
     }
 
     [Test]
     public void TypeDeclaration_Multiple()
     {
-        ParseExpression("SomeType { Bit b OtherType c }");
+        ParseStatement("SomeType { Bit b OtherType c }");
         Verify<TypeDeclaration>("SomeType { Bit b OtherType c }");
     }
 
     [Test]
     public void TypeDeclaration_Template_Simple()
     {
-        ParseExpression("SomeType<T> { T b }");
+        ParseStatement("SomeType<T> { T b }");
         Verify<TypeDeclaration>("SomeType<T> { T b }");
     }
 
     [Test]
     public void TypeDeclaration_Template_Multiple()
     {
-        ParseExpression("SomeType<T> { T b OtherType c }");
+        ParseStatement("SomeType<T> { T b OtherType c }");
         Verify<TypeDeclaration>("SomeType<T> { T b OtherType c }");
     }
 
     [Test]
     public void TypeDeclaration_MultiTemplate_Multiple()
     {
-        ParseExpression("SomeType<T,V> { T b V c }");
+        ParseStatement("SomeType<T,V> { T b V c }");
         Verify<TypeDeclaration>("SomeType<T, V> { T b V c }");
-    }
-
-    [Test]
-    public void NameExpression_Templated()
-    {
-        ParseExpression("SomeType<T,V>");
-        Verify<NameExpression>("SomeType<T, V>");
     }
 
     [Test]
     public void TypeDeclaration_WithTemplatedBody()
     {
-        ParseExpression("SomeType { List<Bit> bits }");
+        ParseStatement("SomeType { List<Bit> bits }");
         Verify<TypeDeclaration>("SomeType { List<Bit> bits }");
     }
 
     [Test]
     public void TypeDeclaration_WithCallableBody()
     {
-        ParseExpression("SomeType<T> { T->List<Bit> bits }");
-        Verify<TypeDeclaration>("SomeType<T> { T->List<Bit> bits }");
+        ParseStatement("SomeType<T> { T->List<Bit> bits }");
+        Verify<TypeDeclaration>("SomeType<T> { (T->List<Bit>) bits }");
     }
 
     [Test]
@@ -508,6 +555,24 @@ public class ParserTests
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
         expression = parser.ParseExpression();
+        return expression;
+    }
+
+    private Expression ParseStatement(string code)
+    {
+        var reader = new StringCodeReader(code);
+        var lexer = new Lexer(reader);
+        var parser = new Parser(lexer);
+        expression = parser.ParseStatement();
+        return expression;
+    }
+
+    private Expression ParseType(string code)
+    {
+        var reader = new StringCodeReader(code);
+        var lexer = new Lexer(reader);
+        var parser = new Parser(lexer);
+        expression = parser.ParseType();
         return expression;
     }
 }
