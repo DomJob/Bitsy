@@ -100,7 +100,7 @@ public class Parser
         return left;
     }
 
-    private TypeDeclaration ParseTypeDefinition()
+    private Expression ParseTypeDefinition()
     {
         var name = ParseName();
         List<TypeExpression> templates = [];
@@ -116,7 +116,14 @@ public class Parser
             }
         }
 
-        Consume(TokenType.LeftBrace);
+        if (!Match(TokenType.LeftBrace))
+        {
+            var actualType = new SimpleTypeExpression(name.Name, templates.Select(t => (SimpleTypeExpression)t).ToList());
+            if(Match(TokenType.Arrow))
+                return new FunctionTypeExpression(actualType, ParseType());
+            return actualType;
+        }
+        
         List<(TypeExpression Type, NameExpression Name)> definition = [];
 
         while (true)
@@ -128,21 +135,52 @@ public class Parser
         return new TypeDeclaration(name, templates, definition);
     }
 
-    private FunctionDeclaration ParseFunctionDeclaration()
+    private Expression ParseFunctionDeclaration()
     {
         var name = ParseName();
         Consume(TokenType.LeftParenthesis);
         List<(TypeExpression, NameExpression)> arguments = [];
+        List<Expression> callArgs = [];
 
         while (true)
         {
             if (Match(TokenType.RightParenthesis)) break;
-            arguments.Add((ParseType(), ParseName()));
+
+            var typeOrArgExpr = ParseStatement();
+
+            if (NextTokenIs(TokenType.Comma) || NextTokenIs(TokenType.RightParenthesis))
+            {
+                callArgs.Add(typeOrArgExpr);
+                if (Match(TokenType.LeftParenthesis))
+                    break;
+            }
+            else
+            {
+                var paramName = ParseName();
+            
+                if(typeOrArgExpr is NameExpression nameExpr)
+                    arguments.Add((new SimpleTypeExpression(nameExpr.Name), paramName));
+                else if (typeOrArgExpr is TypeExpression typeExpr)
+                    arguments.Add((typeExpr, paramName));
+                else throw new SyntaxError("Expected type", typeOrArgExpr.Position);
+            }
+            
             if (Match(TokenType.RightParenthesis)) break;
             Consume(TokenType.Comma);
         }
+        
+        switch (callArgs.Count)
+        {
+            case > 0 when arguments.Count == 0:
+                return new CallExpression(name, callArgs);
+            case > 0 when arguments.Count > 0:
+                throw new SyntaxError("Ambiguous between function call and function definition", callArgs[0].Position);
+        }
 
-        Consume(TokenType.LeftBrace);
+        if (!Match(TokenType.LeftBrace))
+        {
+            return new CallExpression(name, []);
+        }
 
         List<Expression> body = [];
         while (!Match(TokenType.RightBrace))
@@ -217,6 +255,8 @@ public class Parser
     {
         Register(TokenType.LeftParenthesis, new FunctionCallParselet());
         Register(TokenType.Question, new ConditionalParselet());
+        Infix(TokenType.LeftAngle, BindingPower.Template);
+        Infix(TokenType.Arrow, BindingPower.Arrow);
         Infix(TokenType.And, BindingPower.And);
         Infix(TokenType.Or, BindingPower.Or);
         Infix(TokenType.Xor, BindingPower.Xor);

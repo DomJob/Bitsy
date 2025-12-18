@@ -16,13 +16,28 @@ public class GroupParselet : PrefixParselet
         }
 
         var expression = parser.ParseExpression();
-        if (expression is NameExpression nameExpr && parser.Match(TokenType.Arrow))
+        if (expression is NameExpression nameExpr)
         {
-            var input = new SimpleTypeExpression(nameExpr.Name, []);
-            var output = parser.ParseType();
-            return new FunctionTypeExpression(input, output);
+            if (parser.Match(TokenType.Arrow))
+            {
+                var input = new SimpleTypeExpression(nameExpr.Name, []);
+                var output = parser.ParseType();
+                return new FunctionTypeExpression(input, output);
+            }
+
+            if (parser.Match(TokenType.Comma))
+            {
+                List<TypeExpression> types = [new SimpleTypeExpression(nameExpr.Name, [])];
+                while (true)
+                {
+                    types.Add(parser.ParseType());
+                    if (parser.Match(TokenType.RightParenthesis)) break;
+                    parser.Consume(TokenType.Comma);
+                }
+                return new UnionTypeExpression(types);
+            }
         }
-        
+
         parser.Consume(TokenType.RightParenthesis);
         return expression;
     }

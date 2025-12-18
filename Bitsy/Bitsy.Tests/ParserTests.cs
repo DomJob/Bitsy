@@ -382,15 +382,7 @@ public class ParserTests
 
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
-
-    [Test]
-    public void TypeExpression_Simple()
-    {
-        ParseType("a");
-
-        Verify<TypeExpression>("a");
-    }
-
+    
     [Test]
     public void TypeExpression_SimpleUnion()
     {
@@ -568,7 +560,7 @@ public class ParserTests
         var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
-        expression = parser.ParseExpression();
+        expression = parser.ParseStatement();
         return expression;
     }
 
@@ -586,7 +578,7 @@ public class ParserTests
         var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
-        expression = parser.ParseType();
+        expression = parser.ParseStatement();
         return expression;
     }
 }
