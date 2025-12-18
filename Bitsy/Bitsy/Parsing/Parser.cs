@@ -17,20 +17,20 @@ public class Parser
         RegisterPrefixTokens();
         RegisterInfixTokens();
     }
-    
+
     public Expression ParseStatement()
     {
         if (NextTokenIs(TokenType.Return))
             return ParseReturnStatement();
-        if(!NextTokenIs(TokenType.Identifier))
+        if (!NextTokenIs(TokenType.Identifier))
             return ParseExpression();
-        
+
         switch (Peek(2).Type)
         {
             case TokenType.Assignment:
                 return ParseAssignment();
             case TokenType.LeftParenthesis:
-                return ParseFunctionDeclaration();
+                return ParseFunction();
             case TokenType.LeftBrace:
             case TokenType.LeftAngle:
                 return ParseTypeDefinition();
@@ -118,12 +118,13 @@ public class Parser
 
         if (!Match(TokenType.LeftBrace))
         {
-            var actualType = new SimpleTypeExpression(name.Name, templates.Select(t => (SimpleTypeExpression)t).ToList());
-            if(Match(TokenType.Arrow))
+            var actualType =
+                new SimpleTypeExpression(name.Name, templates.Select(t => (SimpleTypeExpression)t).ToList());
+            if (Match(TokenType.Arrow))
                 return new FunctionTypeExpression(actualType, ParseType());
             return actualType;
         }
-        
+
         List<(TypeExpression Type, NameExpression Name)> definition = [];
 
         while (true)
@@ -135,60 +136,65 @@ public class Parser
         return new TypeDeclaration(name, templates, definition);
     }
 
-    private Expression ParseFunctionDeclaration()
+    private Expression ParseFunction()
     {
         var name = ParseName();
         Consume(TokenType.LeftParenthesis);
+
+        if (Match(TokenType.RightParenthesis))
+            return NextTokenIs(TokenType.LeftBrace)
+                ? ParseFunctionDefinition(name, [])
+                : ParseCallExpression(name, []);
+
+        var firstExpression = ParseExpression();
+
+        if (NextTokenIs(TokenType.Comma, TokenType.RightParenthesis))
+            return ParseCallExpression(name, [firstExpression]);
+
+        var parameterName = ParseName();
         List<(TypeExpression, NameExpression)> arguments = [];
-        List<Expression> callArgs = [];
 
-        while (true)
-        {
-            if (Match(TokenType.RightParenthesis)) break;
+        if (firstExpression is NameExpression paramTypeName)
+            arguments.Add((paramTypeName.ToType(), parameterName));
+        else if (firstExpression is TypeExpression paramType)
+            arguments.Add((paramType, parameterName));
+        else throw new SyntaxError("Expected type", firstExpression.Position);
 
-            var typeOrArgExpr = ParseStatement();
+        return ParseFunctionDefinition(name, arguments);
+    }
 
-            if (NextTokenIs(TokenType.Comma) || NextTokenIs(TokenType.RightParenthesis))
-            {
-                callArgs.Add(typeOrArgExpr);
-                if (Match(TokenType.LeftParenthesis))
-                    break;
-            }
-            else
-            {
-                var paramName = ParseName();
-            
-                if(typeOrArgExpr is NameExpression nameExpr)
-                    arguments.Add((new SimpleTypeExpression(nameExpr.Name), paramName));
-                else if (typeOrArgExpr is TypeExpression typeExpr)
-                    arguments.Add((typeExpr, paramName));
-                else throw new SyntaxError("Expected type", typeOrArgExpr.Position);
-            }
-            
-            if (Match(TokenType.RightParenthesis)) break;
-            Consume(TokenType.Comma);
-        }
+    private Expression ParseFunctionDefinition(NameExpression name, List<(TypeExpression, NameExpression)> arguments)
+    {
+        if (Match(TokenType.RightParenthesis))
+            return new FunctionDeclaration(name, arguments, ParseFunctionBody());
         
-        switch (callArgs.Count)
-        {
-            case > 0 when arguments.Count == 0:
-                return new CallExpression(name, callArgs);
-            case > 0 when arguments.Count > 0:
-                throw new SyntaxError("Ambiguous between function call and function definition", callArgs[0].Position);
-        }
+        if (NextTokenIs(TokenType.Comma))
+            do
+            {
+                Consume(TokenType.Comma);
+                arguments.Add((ParseType(), ParseName()));
+            } while (!Match(TokenType.RightParenthesis));
 
-        if (!Match(TokenType.LeftBrace))
-        {
-            if(arguments.Count == 0)
-                return new CallExpression(name, callArgs);
-            Consume(TokenType.LeftBrace);
-        }
+        return new FunctionDeclaration(name, arguments, ParseFunctionBody());
+    }
 
+    private Expression ParseCallExpression(NameExpression name, List<Expression> arguments)
+    {
+        if (Match(TokenType.RightParenthesis))
+            return new CallExpression(name, arguments);
+        while (Match(TokenType.Comma))
+            arguments.Add(ParseExpression());
+        return new CallExpression(name, arguments);
+    }
+
+    private List<Expression> ParseFunctionBody()
+    {
+        Match(TokenType.LeftBrace);
         List<Expression> body = [];
         while (!Match(TokenType.RightBrace))
             body.Add(ParseStatement());
-
-        return new FunctionDeclaration(name, arguments, body);
+        Match(TokenType.RightBrace);
+        return body;
     }
 
     private NameExpression ParseName()
@@ -235,12 +241,15 @@ public class Parser
     {
         return lexer.Next();
     }
-    
-    private bool NextTokenIs(TokenType tokenType) => Peek().Type == tokenType;
+
+    private bool NextTokenIs(params TokenType[] tokenType)
+    {
+        return tokenType.Any(t => t == Peek().Type);
+    }
 
     public bool Match(TokenType expected)
     {
-        if(!NextTokenIs(expected)) return false;
+        if (!NextTokenIs(expected)) return false;
         Consume();
         return true;
     }
@@ -274,7 +283,7 @@ public class Parser
         Prefix(TokenType.Return, BindingPower.Return);
         Prefix(TokenType.Not, BindingPower.Not);
     }
-    
+
     private void Register(TokenType token, PrefixParselet parselet)
     {
         prefixParselets[token] = parselet;

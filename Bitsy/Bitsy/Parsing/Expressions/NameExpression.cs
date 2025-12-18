@@ -27,4 +27,9 @@ public class NameExpression : Expression
 
         return Name.Literal + templates;
     }
+
+    public SimpleTypeExpression ToType()
+    {
+        return new SimpleTypeExpression(Name);
+    }
 }

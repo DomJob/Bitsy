@@ -21,15 +21,17 @@ public class BinaryOperatorParselet : InfixParselet
                 var type = new SimpleTypeExpression(name.Name, []);
                 return new FunctionTypeExpression(type, parser.ParseType());
             }
-            else if(left is TypeExpression type)
+            else if (left is TypeExpression type)
+            {
                 return new FunctionTypeExpression(type, parser.ParseType());
-            
+            }
+
             throw new ParserException("Expected type, got " + left.GetType().Name);
-            
         }
+
         if (token.Type == TokenType.LeftAngle)
         {
-            if(left is not NameExpression nameExpression)
+            if (left is not NameExpression nameExpression)
                 throw new ParserException("Expected name, got " + left.GetType().Name);
             List<SimpleTypeExpression> templates = [];
             while (true)
@@ -39,9 +41,10 @@ public class BinaryOperatorParselet : InfixParselet
                 if (parser.Match(TokenType.RightAngle)) break;
                 parser.Consume(TokenType.Comma);
             }
+
             return new SimpleTypeExpression(nameExpression.Name, templates);
         }
-        
+
         var right = token.Type == TokenType.As
             ? parser.ParseType(false)
             : parser.ParseExpression(Precedence);

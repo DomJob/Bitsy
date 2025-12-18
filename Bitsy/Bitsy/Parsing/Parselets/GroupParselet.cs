@@ -34,6 +34,7 @@ public class GroupParselet : PrefixParselet
                     if (parser.Match(TokenType.RightParenthesis)) break;
                     parser.Consume(TokenType.Comma);
                 }
+
                 return new UnionTypeExpression(types);
             }
         }

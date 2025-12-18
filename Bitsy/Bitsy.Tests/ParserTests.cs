@@ -334,7 +334,7 @@ public class ParserTests
 
         Verify<FunctionDeclaration>("someFunc() { a = 1 }");
     }
-    
+
     [Test]
     public void FunctionDeclaration_MissingBody_Throws()
     {
@@ -388,7 +388,7 @@ public class ParserTests
 
         Verify<FunctionDeclaration>("someFunc(Bit a, SomeType b) { c = (a & (b.idk)) d = 1 }");
     }
-    
+
     [Test]
     public void TypeExpression_SimpleUnion()
     {
