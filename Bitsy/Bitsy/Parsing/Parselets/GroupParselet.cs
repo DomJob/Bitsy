@@ -20,14 +20,14 @@ public class GroupParselet : PrefixParselet
         {
             if (parser.Match(TokenType.Arrow))
             {
-                var input = new SimpleTypeExpression(nameExpr.Name, []);
+                var input = nameExpr.ToType();
                 var output = parser.ParseTypeSignature();
                 return new FunctionTypeExpression(input, output);
             }
 
             if (parser.Match(TokenType.Comma))
             {
-                List<TypeExpression> types = [new SimpleTypeExpression(nameExpr.Name, [])];
+                List<TypeExpression> types = [nameExpr.ToType()];
                 while (true)
                 {
                     types.Add(parser.ParseTypeSignature());
