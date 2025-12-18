@@ -179,7 +179,9 @@ public class Parser
 
         if (!Match(TokenType.LeftBrace))
         {
-            return new CallExpression(name, []);
+            if(arguments.Count == 0)
+                return new CallExpression(name, callArgs);
+            Consume(TokenType.LeftBrace);
         }
 
         List<Expression> body = [];
@@ -272,7 +274,6 @@ public class Parser
         Prefix(TokenType.Return, BindingPower.Return);
         Prefix(TokenType.Not, BindingPower.Not);
     }
-
     
     private void Register(TokenType token, PrefixParselet parselet)
     {

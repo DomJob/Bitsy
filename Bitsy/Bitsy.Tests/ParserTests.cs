@@ -12,7 +12,7 @@ public class ParserTests
     [Test]
     public void Identifier_Simple()
     {
-        ParseExpression("abc");
+        ParseStatement("abc");
 
         Verify<NameExpression>("abc");
     }
@@ -20,7 +20,7 @@ public class ParserTests
     [Test]
     public void Prefix_NotExpression()
     {
-        ParseExpression("~abc");
+        ParseStatement("~abc");
 
         Verify<UnaryExpression>("~abc");
     }
@@ -28,7 +28,7 @@ public class ParserTests
     [Test]
     public void Infix_AndOperation()
     {
-        ParseExpression("a & b");
+        ParseStatement("a & b");
 
         Verify<BinaryExpression>("(a & b)");
     }
@@ -36,7 +36,7 @@ public class ParserTests
     [Test]
     public void Infix_OrOperation()
     {
-        ParseExpression("a | b");
+        ParseStatement("a | b");
 
         Verify<BinaryExpression>("(a | b)");
     }
@@ -44,7 +44,7 @@ public class ParserTests
     [Test]
     public void Infix_XorOperation()
     {
-        ParseExpression("a ^ b");
+        ParseStatement("a ^ b");
 
         Verify<BinaryExpression>("(a ^ b)");
     }
@@ -52,7 +52,7 @@ public class ParserTests
     [Test]
     public void NegateWithAndOperation()
     {
-        ParseExpression("~a & b");
+        ParseStatement("~a & b");
 
         Verify<BinaryExpression>("(~a & b)");
     }
@@ -60,7 +60,7 @@ public class ParserTests
     [Test]
     public void ReturnStatement()
     {
-        ParseExpression("return a");
+        ParseStatement("return a");
 
         Verify<UnaryExpression>("return a");
     }
@@ -68,7 +68,7 @@ public class ParserTests
     [Test]
     public void ReturnStatement_Precedence()
     {
-        ParseExpression("return a&b");
+        ParseStatement("return a&b");
 
         Verify<UnaryExpression>("return (a & b)");
     }
@@ -76,7 +76,7 @@ public class ParserTests
     [Test]
     public void ReturnStatement_Precedence2()
     {
-        ParseExpression("return ~a");
+        ParseStatement("return ~a");
 
         Verify<UnaryExpression>("return ~a");
     }
@@ -84,7 +84,7 @@ public class ParserTests
     [Test]
     public void ReturnStatement_Precedence3()
     {
-        ParseExpression("return ~a as SomeType");
+        ParseStatement("return ~a as SomeType");
 
         Verify<UnaryExpression>("return (~a as SomeType)");
     }
@@ -92,7 +92,7 @@ public class ParserTests
     [Test]
     public void NegateTwice()
     {
-        ParseExpression("~~a");
+        ParseStatement("~~a");
 
         Verify<UnaryExpression>("~~a");
     }
@@ -100,7 +100,7 @@ public class ParserTests
     [Test]
     public void NegateAndOperation()
     {
-        ParseExpression("~(a & b)");
+        ParseStatement("~(a & b)");
 
         Verify<UnaryExpression>("~(a & b)");
     }
@@ -108,7 +108,7 @@ public class ParserTests
     [Test]
     public void AndOperationsLeftAssociative()
     {
-        ParseExpression("a & b & c");
+        ParseStatement("a & b & c");
 
         Verify<BinaryExpression>("((a & b) & c)");
     }
@@ -116,7 +116,7 @@ public class ParserTests
     [Test]
     public void AndOrOperationsProperOrder()
     {
-        ParseExpression("a | b & c");
+        ParseStatement("a | b & c");
 
         Verify<BinaryExpression>("(a | (b & c))");
     }
@@ -124,7 +124,7 @@ public class ParserTests
     [Test]
     public void AndXOrOperationsProperOrder()
     {
-        ParseExpression("a ^ b & c");
+        ParseStatement("a ^ b & c");
 
         Verify<BinaryExpression>("(a ^ (b & c))");
     }
@@ -132,7 +132,7 @@ public class ParserTests
     [Test]
     public void CallExpression_NoArgs()
     {
-        ParseExpression("abc()");
+        ParseStatement("abc()");
 
         Verify<CallExpression>("abc()");
     }
@@ -140,7 +140,7 @@ public class ParserTests
     [Test]
     public void CallExpression_OneArgs()
     {
-        ParseExpression("abc(1)");
+        ParseStatement("abc(1)");
 
         Verify<CallExpression>("abc(1)");
     }
@@ -148,7 +148,7 @@ public class ParserTests
     [Test]
     public void CallExpression_TwoArgs()
     {
-        ParseExpression("abc(def, 2)");
+        ParseStatement("abc(def, 2)");
 
         Verify<CallExpression>("abc(def, 2)");
     }
@@ -156,7 +156,7 @@ public class ParserTests
     [Test]
     public void CallExpression_ThreeArgs_Nested()
     {
-        ParseExpression("abc(def, ghi(3))");
+        ParseStatement("abc(def, ghi(3))");
 
         Verify<CallExpression>("abc(def, ghi(3))");
     }
@@ -164,7 +164,7 @@ public class ParserTests
     [Test]
     public void CombineCallAnd()
     {
-        ParseExpression("1 & abc(def, 2)");
+        ParseStatement("1 & abc(def, 2)");
 
         Verify<BinaryExpression>("(1 & abc(def, 2))");
     }
@@ -172,7 +172,7 @@ public class ParserTests
     [Test]
     public void ComplexCall()
     {
-        ParseExpression("(def(a^b)&1)(abc)");
+        ParseStatement("(def(a^b)&1)(abc)");
 
         Verify<CallExpression>("(def((a ^ b)) & 1)(abc)");
     }
@@ -180,7 +180,7 @@ public class ParserTests
     [Test]
     public void NegateCall()
     {
-        ParseExpression("~func(1)");
+        ParseStatement("~func(1)");
 
         Verify<UnaryExpression>("~func(1)");
     }
@@ -188,7 +188,7 @@ public class ParserTests
     [Test]
     public void DotExpression_Simple()
     {
-        ParseExpression("abc.def");
+        ParseStatement("abc.def");
 
         Verify<BinaryExpression>("(abc.def)");
     }
@@ -196,7 +196,7 @@ public class ParserTests
     [Test]
     public void DotExpression_Chained()
     {
-        ParseExpression("abc.def.ghi");
+        ParseStatement("abc.def.ghi");
 
         Verify<BinaryExpression>("((abc.def).ghi)");
     }
@@ -204,7 +204,7 @@ public class ParserTests
     [Test]
     public void DotExpression_Combined()
     {
-        ParseExpression("abc.def & a");
+        ParseStatement("abc.def & a");
 
         Verify<BinaryExpression>("((abc.def) & a)");
     }
@@ -228,7 +228,7 @@ public class ParserTests
     [Test]
     public void As_Complex()
     {
-        ParseExpression("a & (b | c) ^ abc(def,ghi) as SomeType");
+        ParseStatement("a & (b | c) ^ abc(def,ghi) as SomeType");
 
         Verify<BinaryExpression>("(((a & (b | c)) ^ abc(def, ghi)) as SomeType)");
     }
@@ -236,7 +236,7 @@ public class ParserTests
     [Test]
     public void ExplicitObject_Simple()
     {
-        ParseExpression("{a: 1, b:2, c:  3}");
+        ParseStatement("{a: 1, b:2, c:  3}");
 
         Verify<ExplicitObjectExpression>("{a: 1, b: 2, c: 3}");
     }
@@ -244,7 +244,7 @@ public class ParserTests
     [Test]
     public void ExplicitObject_LessSimple()
     {
-        ParseExpression("{a: 1, b: func(arg), c:  abc&d}");
+        ParseStatement("{a: 1, b: func(arg), c:  abc&d}");
 
         Verify<ExplicitObjectExpression>("{a: 1, b: func(arg), c: (abc & d)}");
     }
@@ -274,7 +274,7 @@ public class ParserTests
     [Test]
     public void ImplicitObject_Simple()
     {
-        ParseExpression("{0,1,0,1}");
+        ParseStatement("{0,1,0,1}");
 
         Verify<ImplicitObjectExpression>("{0, 1, 0, 1}");
     }
@@ -282,7 +282,7 @@ public class ParserTests
     [Test]
     public void ImplicitObject_Complex()
     {
-        ParseExpression("{0,{0,1} as Bit2,abc(a),1^0, {b1:0,b2:1,b3:0,b4: 2}}");
+        ParseStatement("{0,{0,1} as Bit2,abc(a),1^0, {b1:0,b2:1,b3:0,b4: 2}}");
 
         Verify<ImplicitObjectExpression>("{0, ({0, 1} as Bit2), abc(a), (1 ^ 0), {b1: 0, b2: 1, b3: 0, b4: 2}}");
     }
@@ -290,7 +290,7 @@ public class ParserTests
     [Test]
     public void Conditional_Simple()
     {
-        ParseExpression("a ? b : c");
+        ParseStatement("a ? b : c");
 
         Verify<ConditionalExpression>("(a ? b : c)");
     }
@@ -298,7 +298,7 @@ public class ParserTests
     [Test]
     public void Conditional_Chained()
     {
-        ParseExpression("cond1 ? doThis : otherwise ? doThat : giveUp");
+        ParseStatement("cond1 ? doThis : otherwise ? doThat : giveUp");
 
         Verify<ConditionalExpression>("(cond1 ? doThis : (otherwise ? doThat : giveUp))");
     }
@@ -306,7 +306,7 @@ public class ParserTests
     [Test]
     public void Conditional_ChainedTheOtherWay()
     {
-        ParseExpression("cond1 ? andCond2 ? beAmazed : beLessAmazed : scream");
+        ParseStatement("cond1 ? andCond2 ? beAmazed : beLessAmazed : scream");
 
         Verify<ConditionalExpression>("(cond1 ? (andCond2 ? beAmazed : beLessAmazed) : scream)");
     }
@@ -314,7 +314,7 @@ public class ParserTests
     [Test]
     public void Conditional_WithOtherStuff()
     {
-        ParseExpression("a & cond ? 0 : 1 ^ b");
+        ParseStatement("a & cond ? 0 : 1 ^ b");
 
         Verify<ConditionalExpression>("((a & cond) ? 0 : (1 ^ b))");
     }
@@ -322,7 +322,7 @@ public class ParserTests
     [Test]
     public void Conditional_WithOtherStuffForced()
     {
-        ParseExpression("a & (cond ? 0 : 1) ^ b");
+        ParseStatement("a & (cond ? 0 : 1) ^ b");
 
         Verify<BinaryExpression>("((a & (cond ? 0 : 1)) ^ b)");
     }
@@ -333,6 +333,12 @@ public class ParserTests
         ParseStatement("someFunc() { a = 1 }");
 
         Verify<FunctionDeclaration>("someFunc() { a = 1 }");
+    }
+    
+    [Test]
+    public void FunctionDeclaration_MissingBody_Throws()
+    {
+        VerifyThrows<ParserException>("someFunc(Bit a, Bit b)");
     }
 
     [Test]
@@ -386,7 +392,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_SimpleUnion()
     {
-        ParseType("(a,b)");
+        ParseStatement("(a,b)");
 
         Verify<TypeExpression>("(a, b)");
     }
@@ -394,7 +400,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_SimpleFunctionalType()
     {
-        ParseType("a->b");
+        ParseStatement("a->b");
 
         Verify<FunctionTypeExpression>("(a->b)");
     }
@@ -402,7 +408,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_EmptyInput()
     {
-        ParseType("()->a");
+        ParseStatement("()->a");
 
         Verify<FunctionTypeExpression>("(()->a)");
     }
@@ -410,7 +416,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_EmptyOutput()
     {
-        ParseType("a->()");
+        ParseStatement("a->()");
 
         Verify<FunctionTypeExpression>("(a->())");
     }
@@ -418,7 +424,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_TwoInputs()
     {
-        ParseType("(a,b)->c");
+        ParseStatement("(a,b)->c");
 
         Verify<FunctionTypeExpression>("((a, b)->c)");
     }
@@ -426,7 +432,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_Associativity()
     {
-        ParseType("a->b->c");
+        ParseStatement("a->b->c");
 
         Verify<FunctionTypeExpression>("(a->(b->c))");
     }
@@ -434,7 +440,7 @@ public class ParserTests
     [Test]
     public void TypeExpression_NestedInputs()
     {
-        ParseType("(a,(b->c))->d");
+        ParseStatement("(a,(b->c))->d");
 
         Verify<FunctionTypeExpression>("((a, (b->c))->d)");
     }
@@ -442,21 +448,21 @@ public class ParserTests
     [Test]
     public void TypeExpression_Templated()
     {
-        ParseType("SomeType<T>");
+        ParseStatement("SomeType<T>");
         Verify<TypeExpression>("SomeType<T>");
     }
 
     [Test]
     public void TypeExpression_TemplatedInFunc()
     {
-        ParseType("SomeType<T>->Output");
+        ParseStatement("SomeType<T>->Output");
         Verify<TypeExpression>("(SomeType<T>->Output)");
     }
 
     [Test]
     public void TypeExpression_TemplatedTwice()
     {
-        ParseType("SomeType<T,V>");
+        ParseStatement("SomeType<T,V>");
         Verify<TypeExpression>("SomeType<T, V>");
     }
 
@@ -533,7 +539,7 @@ public class ParserTests
     {
         try
         {
-            ParseExpression(code);
+            ParseStatement(code);
             Assert.Fail();
             return null;
         }
@@ -555,25 +561,7 @@ public class ParserTests
         Verify<Expression>(value);
     }
 
-    private Expression ParseExpression(string code)
-    {
-        var reader = new LineReader(code);
-        var lexer = new Lexer(reader);
-        var parser = new Parser(lexer);
-        expression = parser.ParseStatement();
-        return expression;
-    }
-
     private Expression ParseStatement(string code)
-    {
-        var reader = new LineReader(code);
-        var lexer = new Lexer(reader);
-        var parser = new Parser(lexer);
-        expression = parser.ParseStatement();
-        return expression;
-    }
-
-    private Expression ParseType(string code)
     {
         var reader = new LineReader(code);
         var lexer = new Lexer(reader);
