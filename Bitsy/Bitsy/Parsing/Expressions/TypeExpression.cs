@@ -1,21 +1,52 @@
+using Bitsy.Lexing;
+
 namespace Bitsy.Parsing.Expressions;
 
-public class TypeExpression : Expression
+public abstract class TypeExpression : Expression
 {
-    public TypeExpression(List<Expression> inputs, Expression output)
+    
+}
+
+public class SimpleTypeExpression : TypeExpression
+{
+    public Token Name { get; }
+    public List<SimpleTypeExpression> Templates { get; }
+
+    public SimpleTypeExpression(Token name, List<SimpleTypeExpression>? templates = null)
     {
-        Inputs = inputs;
+        Name = name;
+        Templates = templates ?? [];
+    }
+    
+    public override String ToString() => Name.Literal + (Templates.Count == 0 ? "" : $"<{string.Join(", ", Templates)}>");
+}
+
+public class UnionTypeExpression : TypeExpression
+{
+    public List<TypeExpression> Names { get; }
+
+    public UnionTypeExpression(List<TypeExpression> names)
+    {
+        Names = names;
+    }
+    
+    public override String ToString() => $"({string.Join(", ", Names)})";
+}
+
+public class FunctionTypeExpression : TypeExpression
+{
+    public FunctionTypeExpression(TypeExpression input, TypeExpression output)
+    {
+        Input = input;
         Output = output;
     }
 
-    public List<Expression> Inputs { get; }
+    public TypeExpression Input { get; }
 
-    public Expression Output { get; }
+    public TypeExpression Output { get; }
 
     public override string ToString()
     {
-        if (Inputs.Count == 0) return $"()->{Output}";
-        if (Inputs.Count == 1) return $"{Inputs[0]}->{Output}";
-        return $"({string.Join(", ", Inputs.Select(e => e.ToString()))})->{Output}";
+        return $"({Input}->{Output})";
     }
 }

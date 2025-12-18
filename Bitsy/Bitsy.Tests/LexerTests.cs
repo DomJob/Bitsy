@@ -1,6 +1,7 @@
+using Bitsy.Lexing;
 using Bitsy.Reading;
 
-namespace Bitsy.Lexing;
+namespace Bitsy;
 
 public class LexerTests
 {

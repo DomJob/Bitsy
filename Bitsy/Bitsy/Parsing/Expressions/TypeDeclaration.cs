@@ -32,14 +32,14 @@ public class TypeDeclaration : Expression
             throw new SyntaxError("Invalid type name for declaration", Name.Position);
         foreach (var (bodyType, bodyName) in Body)
         {
-            if (bodyType.GetType() != typeof(NameExpression) && bodyType.GetType() != typeof(TypeExpression))
+            if (bodyType.GetType() != typeof(NameExpression) && bodyType.GetType() != typeof(FunctionTypeExpression))
                 throw new SyntaxError("Invalid attribute type in type declaration body", bodyType.Position);
             if (bodyName.GetType() != typeof(NameExpression))
                 throw new SyntaxError("Invalid attribute in type declaration body", bodyName.Position);
         }
 
         foreach (var templateArg in Templates)
-            if (templateArg.GetType() != typeof(NameExpression) && templateArg.GetType() != typeof(TypeExpression))
+            if (templateArg.GetType() != typeof(NameExpression) && templateArg.GetType() != typeof(FunctionTypeExpression))
                 throw new SyntaxError("Invalid generic type in type declaration", templateArg.Position);
     }
 
