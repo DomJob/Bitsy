@@ -42,7 +42,16 @@ public class AnalyzerTests
     {
         When.ReadExpression("a = 1")
             .Then
-            .Expression("b").Throws<TypeException>();
+            .Expression("b").Throws<UnknownSymbolException>();
+    }
+
+    [Test]
+    public void BindingToBitExpression()
+    {
+        When.ReadExpression("a = 1 ^ 0")
+        .And.ReadExpression("b = a ^ 1")
+        .Then.Expression("a").Is<Bit>()
+        .And.Expression("b").Is<Bit>();
     }
 
     internal class TestScenario

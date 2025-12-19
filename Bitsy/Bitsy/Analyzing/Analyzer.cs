@@ -32,13 +32,23 @@ public class Analyzer
         {
             case NameExpression name:
                 return LookupType(name);
+            case BinaryExpression expr:
+                ValidateBitType(expr.Right);
+                ValidateBitType(expr.Left);
+                return Bit.Instance;
         }
         throw new TypeException($"Unknown expression type '{expression.GetType().Name}'");
     }
 
+    private void ValidateBitType(Expression expr)
+    {
+        if(LookupType(expr) != Bit.Instance)
+            throw new WrongTypeException($"Expression type '{expr.GetType().Name}' is not a bit");
+    }
+
     private Type LookupType(Expression symbol)
     {
-        if(!typeEnv.TryGetValue(symbol.Literal, out var type)) throw new TypeException($"Unknown symbol '{symbol}'");
+        if(!typeEnv.TryGetValue(symbol.Literal, out var type)) throw new UnknownSymbolException($"Unknown symbol '{symbol}'");
         return type;
     }
 }
