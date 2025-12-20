@@ -53,6 +53,38 @@ public class AnalyzerTests
         .Then.Expression("a").Is<Bit>()
         .And.Expression("b").Is<Bit>();
     }
+    
+    [Test]
+    public void BindingWithAs_SimpleBit()
+    {
+        When.ReadExpression("a = 1 as Bit")
+            .Then
+            .Expression("a").Is<Bit>();
+    }
+
+    [Test]
+    public void BindingFunctionDefinition_Empty()
+    {
+        When.ReadExpression("someFunc() { }")
+            .Then
+            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Union { Types.Count: 0 } });
+    }
+    
+    [Test]
+    public void BindingFunctionDefinition_ReturnBit()
+    {
+        When.ReadExpression("someFunc() { return 1 }")
+            .Then
+            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Bit});
+    }
+    
+    [Test]
+    public void BindingFunctionDefinition_WithOneReturnBit()
+    {
+        When.ReadExpression("someFunc(Bit a) { return 1 }")
+            .Then
+            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit});
+    }
 
     internal class TestScenario
     {
@@ -87,14 +119,16 @@ public class AnalyzerTests
         internal TestScenario Is<T>() where T : Type
         {
             var type = analyzer.ResolveType(lastExpression);
+            Console.WriteLine(type);
             Assert.That(type, NUnit.Framework.Is.InstanceOf<T>());
             return this;
         }
 
-        internal TestScenario With(Func<Type, bool> predicate)
+        internal TestScenario Is<T>(Func<T, bool> suchThat) where T : Type
         {
-            var type = analyzer.ResolveType(lastExpression);
-            Assert.That(predicate(type!), NUnit.Framework.Is.True);
+            var type = (T)analyzer.ResolveType(lastExpression);
+            Console.WriteLine(type);
+            Assert.That(suchThat(type!), NUnit.Framework.Is.True);
 
             return this;
         }

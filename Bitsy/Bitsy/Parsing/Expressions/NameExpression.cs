@@ -10,6 +10,11 @@ public class NameExpression : Expression
         Name = name;
     }
 
+    public NameExpression(string name)
+    {
+        Name = new Token(TokenType.Identifier, new Position(), name);
+    }
+
     public Token Name { get; }
 
     public new Position Position => Name.Position;

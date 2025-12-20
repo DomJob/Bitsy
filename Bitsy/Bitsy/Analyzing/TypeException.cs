@@ -10,6 +10,12 @@ public class UnknownSymbolException : Exception
     public UnknownSymbolException(string message) : base(message) { }
 }
 
+public class UnknownTypeException : Exception
+{
+    public UnknownTypeException(string message) : base(message) { }
+}
+
+
 public class WrongTypeException : Exception
 {
     public WrongTypeException(string message) : base(message) { }
