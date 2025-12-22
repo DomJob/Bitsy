@@ -3,7 +3,6 @@ using Bitsy.Analyzing.Types;
 using Bitsy.Lexing;
 using Bitsy.Parsing;
 using Bitsy.Reading;
-using Microsoft.Testing.Platform.Extensions.TestHostControllers;
 using Type = Bitsy.Analyzing.Type;
 
 namespace Bitsy;
@@ -28,6 +27,13 @@ public class TypeEnvironmentTests
             .Expression("a").HasType<Bit>()
             .And
             .Expression("b").HasType<Bit>();
+    }
+    
+    [Test]
+    public void BitBinding_CantRebindSameSymbol()
+    {
+        When.ReadStatement("a = 1")
+            .And.ReadingStatementThrows<SymbolAlreadyDefinedException>("a = 0");
     }
 
     [Test]
@@ -113,6 +119,23 @@ public class TypeEnvironmentTests
     }
     
     [Test]
+    public void BindingFunctionThatReturnsSymbolDefinedInFunc()
+    {
+        When.ReadStatement("someFunc(Bit a) { b = a ^ 0 return b }")
+            .Then
+            .Expression("someFunc").HasType<Function>("(Bit->Bit)");
+    }
+    
+    [Test]
+    public void BindingFunctionThatReturnsSymbolDefinedOutOfFunc()
+    {
+        When.ReadStatement("b = 1")
+            .And.ReadStatement("someFunc(Bit a) { return a ^ b }")
+            .Then
+            .Expression("someFunc").HasType<Function>("(Bit->Bit)");
+    }
+    
+    [Test]
     public void BindingFunctionThatReturnsOutsideValue()
     {
         When.ReadStatement("b = 1")
@@ -151,6 +174,24 @@ public class TypeEnvironmentTests
                            }
                            """)
             .Then.Expression("{0,1}").HasType<Bits>("Bits");
+    }
+    
+    [Test]
+    public void DefiningCustomType_WithoutUsingIt_Throws()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadingStatementThrows<SymbolAlreadyDefinedException>
+            ("""
+             SomeType {
+              Bit b1
+              Bit b2
+             }
+             """);
     }
     
     [Test]
@@ -306,7 +347,7 @@ public class TypeEnvironmentTests
     {
         private readonly TypeEnvironment typeEnvironment;
         private Expression? lastExpression;
-
+        
         internal TestScenario()
         {
             typeEnvironment = new TypeEnvironment();
@@ -328,6 +369,21 @@ public class TypeEnvironmentTests
             typeEnvironment.ReadStatement(Parse(code));
             return this;
         }
+        
+        internal TestScenario ReadingStatementThrows<T>(string code) where T : Exception
+        {
+            try
+            {
+                typeEnvironment.ReadStatement(Parse(code));
+                Assert.Fail();
+            }
+            catch (T e)
+            {
+                Assert.That(e, Is.TypeOf(typeof(T)));
+            }
+            
+            return this;
+        }
 
         internal TestScenario Expression(string code)
         {
@@ -339,7 +395,7 @@ public class TypeEnvironmentTests
         {
             var type = typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
-            Assert.That(type, NUnit.Framework.Is.InstanceOf<T>());
+            Assert.That(type, Is.InstanceOf<T>());
             return this;
         }
 
@@ -347,7 +403,7 @@ public class TypeEnvironmentTests
         {
             var type = (T)typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
-            Assert.That(suchThat(type!), NUnit.Framework.Is.True);
+            Assert.That(suchThat(type!), Is.True);
 
             return this;
         }
@@ -356,8 +412,8 @@ public class TypeEnvironmentTests
         {
             var type = (T)typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
-            Assert.That(type, NUnit.Framework.Is.InstanceOf<T>());
-            Assert.That(type.ToString(), NUnit.Framework.Is.EqualTo(expected));
+            Assert.That(type, Is.InstanceOf<T>());
+            Assert.That(type.ToString(), Is.EqualTo(expected));
             return this;
         }
 

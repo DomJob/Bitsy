@@ -1,34 +1,34 @@
 namespace Bitsy.Analyzing;
 
-public class TypeException : Exception
+public class TypeException: Exception
 {
     public TypeException(string message) : base(message)
     {
     }
 }
 
-public class UnknownSymbolException : Exception
+public class UnknownSymbolException: TypeException
 {
     public UnknownSymbolException(string message) : base(message)
     {
     }
 }
 
-public class UnknownTypeException : Exception
+public class UnknownTypeException: TypeException
 {
     public UnknownTypeException(string message) : base(message)
     {
     }
 }
 
-public class WrongTypeException : Exception
+public class WrongTypeException: TypeException
 {
     public WrongTypeException(string message) : base(message)
     {
     }
 }
 
-public class UnknownFieldException : Exception
+public class UnknownFieldException: TypeException
 {
     public UnknownFieldException(string message) : base(message)
     {
@@ -36,9 +36,16 @@ public class UnknownFieldException : Exception
     }
 }
 
-public class AmbiguousObjectTypeException : Exception
+public class AmbiguousObjectTypeException: TypeException
 {
     public AmbiguousObjectTypeException(string message) : base(message)
+    {
+        
+    }
+}
+public class SymbolAlreadyDefinedException: TypeException
+{
+    public SymbolAlreadyDefinedException(string message) : base(message)
     {
         
     }

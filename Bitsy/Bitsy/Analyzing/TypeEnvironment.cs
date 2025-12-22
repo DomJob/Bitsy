@@ -31,19 +31,25 @@ public class TypeEnvironment
         switch (expression)
         {
             case AssignmentExpression assignment:
-                knownSymbols[assignment.Name.Literal] = ResolveType(assignment.Expression);
+                ReadAssignment(assignment);
                 break;
             case FunctionDeclaration function:
                 ReadFunctionDeclaration(function);
-                break; // TODO
+                break;
             case TypeDeclaration type:
                 ReadTypeDeclaration(type);
-                break; // TODO
+                break;
             case ReturnExpression returnExpression:
                 break;
             default:
                 throw new TypeException("Expected a statement, got: " + expression);
         }
+    }
+
+    private void ReadAssignment(AssignmentExpression assignment)
+    {
+        if (!knownSymbols.TryAdd(assignment.Name.Literal, ResolveType(assignment.Expression)))
+            throw new SymbolAlreadyDefinedException($"Symbol {assignment.Name.Literal} already defined in context");
     }
 
     private void ReadTypeDeclaration(TypeDeclaration type)
@@ -190,7 +196,8 @@ public class TypeEnvironment
     private void RegisterType(string name, Type type)
     {
         if(type is Struct s) structs.Add(s);
-        availableTypes.Add(name, type);   
+        if (!availableTypes.TryAdd(name, type))
+            throw new SymbolAlreadyDefinedException("Already defined type " + name);
     }
     
     private void RegisterSymbol(string name, Type type) => knownSymbols.Add(name, type);
