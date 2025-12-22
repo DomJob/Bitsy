@@ -15,4 +15,6 @@ public class Function : Type
     {
         return other is Function f && Input == f.Input && Output == f.Output;
     }
+    
+    public override string ToString() => $"({Input}->{Output})";
 }

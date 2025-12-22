@@ -7,7 +7,7 @@ using Type = Bitsy.Analyzing.Type;
 
 namespace Bitsy;
 
-public class TypeAnalyzerTests
+public class TypeEnvironmentTests
 {
     private TestScenario When => new();
 
@@ -61,14 +61,21 @@ public class TypeAnalyzerTests
             .Then
             .Expression("a").Is<Bit>();
     }
+    
+    [Test]
+    public void BindingWithAs_SimpleBits()
+    {
+        When.ReadStatement("a = 1 as Bits")
+            .Then
+            .Expression("a").Is<Bits>();
+    }
 
     [Test]
     public void BindingFunctionDefinition_Empty()
     {
         When.ReadStatement("someFunc() { }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is
-                { Input: Union { Types.Count: 0 }, Output: Union { Types.Count: 0 } });
+            .Expression("someFunc").Is<Function>("(()->())");
     }
 
     [Test]
@@ -76,7 +83,7 @@ public class TypeAnalyzerTests
     {
         When.ReadStatement("someFunc() { return 1 }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Bit });
+            .Expression("someFunc").Is<Function>("(()->Bit)");
     }
 
     [Test]
@@ -116,12 +123,12 @@ public class TypeAnalyzerTests
 
     internal class TestScenario
     {
-        private readonly TypeAnalyzer typeAnalyzer;
+        private readonly TypeEnvironment typeEnvironment;
         private Expression? lastExpression;
 
         internal TestScenario()
         {
-            typeAnalyzer = new TypeAnalyzer();
+            typeEnvironment = new TypeEnvironment();
         }
 
         public TestScenario And => this;
@@ -137,7 +144,7 @@ public class TypeAnalyzerTests
 
         internal TestScenario ReadStatement(string code)
         {
-            typeAnalyzer.LoadExpression(Parse(code));
+            typeEnvironment.ReadStatement(Parse(code));
             return this;
         }
 
@@ -149,7 +156,7 @@ public class TypeAnalyzerTests
 
         internal TestScenario Is<T>() where T : Type
         {
-            var type = typeAnalyzer.ResolveType(lastExpression);
+            var type = typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
             Assert.That(type, NUnit.Framework.Is.InstanceOf<T>());
             return this;
@@ -157,10 +164,19 @@ public class TypeAnalyzerTests
 
         internal TestScenario Is<T>(Func<T, bool> suchThat) where T : Type
         {
-            var type = (T)typeAnalyzer.ResolveType(lastExpression);
+            var type = (T)typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
             Assert.That(suchThat(type!), NUnit.Framework.Is.True);
 
+            return this;
+        }
+        
+        internal TestScenario Is<T>(string expected) where T : Type
+        {
+            var type = (T)typeEnvironment.ResolveType(lastExpression);
+            Console.WriteLine(type);
+            Assert.That(type, NUnit.Framework.Is.InstanceOf<T>());
+            Assert.That(type.ToString(), NUnit.Framework.Is.EqualTo(expected));
             return this;
         }
 
@@ -168,7 +184,7 @@ public class TypeAnalyzerTests
         {
             try
             {
-                typeAnalyzer.ResolveType(lastExpression);
+                typeEnvironment.ResolveType(lastExpression);
                 Assert.Fail();
             }
             catch (T)

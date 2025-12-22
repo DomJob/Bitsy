@@ -12,4 +12,6 @@ public class Bits : Type
     {
         return other is Bits;
     }
+    
+    public override string ToString() => "Bits";
 }
