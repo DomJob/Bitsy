@@ -32,6 +32,13 @@ public class BinaryOperatorParselet : InfixParselet
             return new FunctionTypeExpression(input, output);
         }
 
+        if (token.Type == TokenType.Assignment)
+        {
+            if (left is not NameExpression nameExpr)
+                throw new ParserException("Expected identifier, got " + left);
+            return new AssignmentExpression(nameExpr, parser.ParseExpression());
+        }
+
         return new BinaryExpression(left, token, parser.ParseExpression(Precedence));
     }
 }

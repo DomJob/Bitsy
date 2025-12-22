@@ -28,7 +28,7 @@ public class TypeEnvironmentTests
             .And
             .Expression("b").HasType<Bit>();
     }
-    
+
     [Test]
     public void BitBinding_CantRebindSameSymbol()
     {
@@ -62,13 +62,22 @@ public class TypeEnvironmentTests
     }
 
     [Test]
+    public void BindingToUnaryExpression()
+    {
+        When.ReadStatement("a = 1")
+            .And.ReadStatement("b = ~a")
+            .Then.Expression("a").HasType<Bit>()
+            .And.Expression("b").HasType<Bit>();
+    }
+
+    [Test]
     public void BindingWithAs_SimpleBit()
     {
         When.ReadStatement("a = 1 as Bit")
             .Then
             .Expression("a").HasType<Bit>();
     }
-    
+
     [Test]
     public void BindingWithAs_SimpleBits()
     {
@@ -111,13 +120,39 @@ public class TypeEnvironmentTests
     }
 
     [Test]
+    public void BindingFunctionDefinition_ThenCallingIt()
+    {
+        When.ReadStatement("someFunc() { return 1 }")
+            .Then
+            .Expression("someFunc()").HasType<Bit>();
+    }
+
+    [Test]
+    public void BindingFunctionDefinition_TwoArgs_ThenCallingIt()
+    {
+        When.ReadStatement("someFunc(Bit a, Bit b) { return 1 }")
+            .Then
+            .Expression("someFunc(1,0)")
+            .HasType<Bit>();
+    }
+
+    [Test]
+    public void BindingFunctionDefinition_ReturnFunc_ThenCallingItTwice()
+    {
+        When.ReadStatement("someFunc() { innerFunc() { return 1} return innerFunc }")
+            .Then
+            .Expression("someFunc").HasType<Function>("(()->(()->Bit))")
+            .And.Expression("(someFunc())()").HasType<Bit>();
+    }
+
+    [Test]
     public void BindingFunctionThatReturnsArg()
     {
         When.ReadStatement("someFunc(Bit a) { return a }")
             .Then
             .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
-    
+
     [Test]
     public void BindingFunctionThatReturnsSymbolDefinedInFunc()
     {
@@ -125,7 +160,7 @@ public class TypeEnvironmentTests
             .Then
             .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
-    
+
     [Test]
     public void BindingFunctionThatReturnsSymbolDefinedOutOfFunc()
     {
@@ -134,7 +169,7 @@ public class TypeEnvironmentTests
             .Then
             .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
-    
+
     [Test]
     public void BindingFunctionThatReturnsOutsideValue()
     {
@@ -163,7 +198,7 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{0,1} as SomeType").HasType<Struct>("SomeType");
     }
-    
+
     [Test]
     public void DefiningCustomType_WithoutUsingIt_IsInterpretedAsBits()
     {
@@ -175,7 +210,7 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{0,1}").HasType<Bits>("Bits");
     }
-    
+
     [Test]
     public void DefiningCustomType_WithoutUsingIt_Throws()
     {
@@ -193,7 +228,7 @@ public class TypeEnvironmentTests
              }
              """);
     }
-    
+
     [Test]
     public void DefiningCustomType_UsingItWithoutCasting_IsInferred()
     {
@@ -205,7 +240,7 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{b1: 0, b2: 1}").HasType<Struct>("SomeType");
     }
-    
+
     [Test]
     public void DefiningCustomType_AndUsingIt_2()
     {
@@ -217,7 +252,7 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{b1: 0, b2: 1} as SomeType").HasType<Struct>("SomeType");
     }
-    
+
     [Test]
     public void DefiningCustomType_AndUsingIt_WrongTypeField()
     {
@@ -230,7 +265,7 @@ public class TypeEnvironmentTests
             .Then.ReadStatement("b = {b1: 0, b2: 1} as SomeType")
             .Then.Expression("{b1: 0, b2: b} as SomeType").Throws<WrongTypeException>();
     }
-    
+
     [Test]
     public void DefiningCustomType_AndUsingIt_WrongFieldName()
     {
@@ -242,7 +277,7 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{b1: 0, zz: 1} as SomeType").Throws<WrongTypeException>();
     }
-    
+
     [Test]
     public void DefiningCustomType_AndUsingIt_InFunction()
     {
@@ -255,7 +290,7 @@ public class TypeEnvironmentTests
             .And.ReadStatement("someFunc(SomeType obj) { return 1 }")
             .Then.Expression("someFunc").HasType<Function>("(SomeType->Bit)");
     }
-    
+
     [Test]
     public void DefiningCustomType_AndUsingIt_InFunction2()
     {
@@ -268,7 +303,7 @@ public class TypeEnvironmentTests
             .And.ReadStatement("someFunc(SomeType obj) { return {0,1} as SomeType }")
             .Then.Expression("someFunc").HasType<Function>("(SomeType->SomeType)");
     }
-    
+
     [Test]
     public void DefiningCustomType_WithOtherCustomTypeInside()
     {
@@ -287,7 +322,7 @@ public class TypeEnvironmentTests
                                """)
             .Then.Expression("1 as SomeType2").HasType<Struct>("SomeType2");
     }
-    
+
     [Test]
     public void DefiningRecursiveType()
     {
@@ -312,7 +347,7 @@ public class TypeEnvironmentTests
             .And.ReadStatement("cond = {1,0} as SomeType")
             .Then.Expression("cond ? 1 : 0").Throws<WrongTypeException>();
     }
-    
+
     [Test]
     public void ConditionalTyping_BothBranchHaveToHaveSameType()
     {
@@ -327,7 +362,7 @@ public class TypeEnvironmentTests
             .And.ReadStatement("b = 1")
             .Then.Expression("cond ? a : b").Throws<WrongTypeException>();
     }
-    
+
     [Test]
     public void ConditionalTyping_HappyPathResultingTypeIsBranchesType()
     {
@@ -347,7 +382,7 @@ public class TypeEnvironmentTests
     {
         private readonly TypeEnvironment typeEnvironment;
         private Expression? lastExpression;
-        
+
         internal TestScenario()
         {
             typeEnvironment = new TypeEnvironment();
@@ -361,7 +396,7 @@ public class TypeEnvironmentTests
             var reader = new LineReader(code);
             var lexer = new Lexer(reader);
             var parser = new Parser(lexer);
-            return parser.Next();
+            return parser.ParseExpression();
         }
 
         internal TestScenario ReadStatement(string code)
@@ -369,7 +404,7 @@ public class TypeEnvironmentTests
             typeEnvironment.ReadStatement(Parse(code));
             return this;
         }
-        
+
         internal TestScenario ReadingStatementThrows<T>(string code) where T : Exception
         {
             try
@@ -381,7 +416,7 @@ public class TypeEnvironmentTests
             {
                 Assert.That(e, Is.TypeOf(typeof(T)));
             }
-            
+
             return this;
         }
 
@@ -393,7 +428,7 @@ public class TypeEnvironmentTests
 
         internal TestScenario HasType<T>() where T : Type
         {
-            var type = typeEnvironment.ResolveType(lastExpression);
+            var type = typeEnvironment.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(type, Is.InstanceOf<T>());
             return this;
@@ -401,16 +436,16 @@ public class TypeEnvironmentTests
 
         internal TestScenario HasType<T>(Func<T, bool> suchThat) where T : Type
         {
-            var type = (T)typeEnvironment.ResolveType(lastExpression);
+            var type = (T)typeEnvironment.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(suchThat(type!), Is.True);
 
             return this;
         }
-        
+
         internal TestScenario HasType<T>(string expected) where T : Type
         {
-            var type = (T)typeEnvironment.ResolveType(lastExpression);
+            var type = (T)typeEnvironment.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(type, Is.InstanceOf<T>());
             Assert.That(type.ToString(), Is.EqualTo(expected));
@@ -421,7 +456,7 @@ public class TypeEnvironmentTests
         {
             try
             {
-                typeEnvironment.ResolveType(lastExpression);
+                typeEnvironment.ResolveType(lastExpression!);
                 Assert.Fail();
             }
             catch (T)

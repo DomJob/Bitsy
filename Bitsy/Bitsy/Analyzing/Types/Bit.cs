@@ -13,5 +13,8 @@ public class Bit : Type
         return other is Bit;
     }
 
-    public override string ToString() => "Bit";
+    public override string ToString()
+    {
+        return "Bit";
+    }
 }

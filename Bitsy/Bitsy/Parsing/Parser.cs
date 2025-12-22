@@ -18,31 +18,24 @@ public class Parser
         RegisterInfixTokens();
     }
 
-    public Expression Next()
+    public Expression ParseExpression(int precedence = 0)
     {
-        if (NextTokenIs(TokenType.Return))
-            return ParseReturn();
+        var token = Consume();
+        var position = token.Position;
+        if (!prefixParselets.TryGetValue(token.Type, out var prefix))
+            throw new ParserException("Could not parse token", token);
 
-        return Peek().Type switch
+        var left = prefix.Parse(this, token);
+
+        while (precedence < GetPrecedence())
         {
-            TokenType.Identifier when Peek(2).Type == TokenType.Assignment => ParseAssignment(),
-            TokenType.Identifier when Peek(2).Type == TokenType.LeftParenthesis => ParseFunction(),
-            _ => ParseExpression()
-        };
-    }
+            token = Consume();
 
-    private AssignmentExpression ParseAssignment()
-    {
-        var name = ParseName();
-        Consume(TokenType.Assignment);
-        var expression = ParseExpression();
-        return new AssignmentExpression(name, expression);
-    }
+            var infix = infixParselets[token.Type];
+            left = infix.Parse(this, left, token);
+        }
 
-    private ReturnExpression ParseReturn()
-    {
-        var returnToken = Consume(TokenType.Return);
-        return new ReturnExpression(returnToken, ParseExpression());
+        return left;
     }
 
     public TypeExpression ParseTypeSignature()
@@ -94,88 +87,9 @@ public class Parser
         return templates;
     }
 
-    private Expression ParseFunction()
-    {
-        var name = ParseName();
-        Consume(TokenType.LeftParenthesis);
-
-        if (Match(TokenType.RightParenthesis))
-            return NextTokenIs(TokenType.LeftBrace)
-                ? ParseFunctionDefinition(name, [])
-                : ParseCallExpression(name, []);
-
-        var firstExpression = ParseExpression();
-
-        if (NextTokenIs(TokenType.Comma, TokenType.RightParenthesis))
-            return ParseCallExpression(name, [firstExpression]);
-
-        var parameterName = ParseName();
-        List<(TypeExpression, NameExpression)> arguments = [];
-
-        if (firstExpression is TypeExpression paramType)
-            arguments.Add((paramType, parameterName));
-        else throw new SyntaxError("Expected type", firstExpression.Position);
-
-        return ParseFunctionDefinition(name, arguments);
-    }
-
-    private Expression ParseFunctionDefinition(NameExpression name, List<(TypeExpression, NameExpression)> arguments)
-    {
-        if (Match(TokenType.RightParenthesis))
-            return new FunctionDeclaration(name, arguments, ParseFunctionBody());
-
-        if (NextTokenIs(TokenType.Comma))
-            do
-            {
-                Consume(TokenType.Comma);
-                arguments.Add((ParseTypeSignature(), ParseName()));
-            } while (!Match(TokenType.RightParenthesis));
-
-        return new FunctionDeclaration(name, arguments, ParseFunctionBody());
-    }
-
-    private Expression ParseCallExpression(NameExpression name, List<Expression> arguments)
-    {
-        if (Match(TokenType.RightParenthesis))
-            return new CallExpression(name, arguments);
-        while (Match(TokenType.Comma))
-            arguments.Add(ParseExpression());
-        return new CallExpression(name, arguments);
-    }
-
-    private List<Expression> ParseFunctionBody()
-    {
-        Match(TokenType.LeftBrace);
-        List<Expression> body = [];
-        while (!Match(TokenType.RightBrace))
-            body.Add(Next());
-        Match(TokenType.RightBrace);
-        return body;
-    }
-
     public NameExpression ParseName()
     {
         return new NameExpression(Consume(TokenType.Identifier));
-    }
-
-    public Expression ParseExpression(int precedence = 0)
-    {
-        var token = Consume();
-        var position = token.Position;
-        if (!prefixParselets.TryGetValue(token.Type, out var prefix))
-            throw new ParserException("Could not parse token", token);
-
-        var left = prefix.Parse(this, token);
-
-        while (precedence < GetPrecedence())
-        {
-            token = Consume();
-
-            var infix = infixParselets[token.Type];
-            left = infix.Parse(this, left, token);
-        }
-
-        return left;
     }
 
     private int GetPrecedence()
@@ -186,9 +100,9 @@ public class Parser
         return 0;
     }
 
-    private Token Peek(int n = 1)
+    private Token Peek()
     {
-        return lexer.Peek(n);
+        return lexer.Peek();
     }
 
     private Token Consume()
@@ -218,8 +132,9 @@ public class Parser
 
     private void RegisterInfixTokens()
     {
-        Register(TokenType.LeftParenthesis, new FunctionCallParselet());
+        Register(TokenType.LeftParenthesis, new LeftParenthesisParselet());
         Register(TokenType.Question, new ConditionalParselet());
+        Infix(TokenType.Assignment, BindingPower.Assign);
         Infix(TokenType.LeftAngle, BindingPower.Template);
         Infix(TokenType.Arrow, BindingPower.Arrow);
         Infix(TokenType.And, BindingPower.And);

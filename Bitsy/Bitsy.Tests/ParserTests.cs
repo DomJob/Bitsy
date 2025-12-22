@@ -7,7 +7,7 @@ namespace Bitsy;
 
 public class ParserTests
 {
-    private Expression expression;
+    private Expression expression = null!;
 
     [Test]
     public void Identifier_Simple()
@@ -138,6 +138,14 @@ public class ParserTests
     }
 
     [Test]
+    public void CallExpression_Twice()
+    {
+        ParseStatement("abc()()");
+
+        Verify<CallExpression>("abc()()");
+    }
+
+    [Test]
     public void CallExpression_OneArgs()
     {
         ParseStatement("abc(1)");
@@ -240,7 +248,7 @@ public class ParserTests
 
         Verify<ExplicitObjectExpression>("{a: 1, b: 2, c: 3}");
     }
-    
+
     [Test]
     public void ExplicitObject_Single()
     {
@@ -567,17 +575,16 @@ public class ParserTests
         VerifyThrows<SyntaxError>("abc.(efg & 1)");
     }
 
-    private T VerifyThrows<T>(string code) where T : Exception
+    private void VerifyThrows<T>(string code) where T : Exception
     {
         try
         {
             ParseStatement(code);
             Assert.Fail();
-            return null;
         }
         catch (T e)
         {
-            return e;
+            Assert.That(e, Is.TypeOf<T>());
         }
     }
 
@@ -598,7 +605,7 @@ public class ParserTests
         var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
-        expression = parser.Next();
+        expression = parser.ParseExpression();
         return expression;
     }
 }

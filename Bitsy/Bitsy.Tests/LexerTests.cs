@@ -148,7 +148,7 @@ public class LexerTests
             .Then.NextToken.IsOfType(TokenType.Return)
             .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("abc")
             .And.NextToken.IsOfType(TokenType.As)
-            .And.NextToken.IsOfType(TokenType.Identifier).And.HasValue("Bit");
+            .And.NextToken.IsOfType(TokenType.Type).And.HasValue("Bit");
     }
 
     private static LexerTestScenario WhenCodeIs(string code)

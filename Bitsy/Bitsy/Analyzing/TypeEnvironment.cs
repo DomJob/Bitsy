@@ -7,12 +7,11 @@ namespace Bitsy.Analyzing;
 
 public class TypeEnvironment
 {
-    private TypeEnvironment? parent;
+    private readonly Dictionary<string, Type> availableTypes = new();
+    private readonly Dictionary<string, Type> knownSymbols = new();
+    private readonly TypeEnvironment? parent;
+    private readonly List<Struct> structs = new();
 
-    private Dictionary<string, Type> availableTypes = new();
-    private Dictionary<string, Type> knownSymbols = new();
-    private List<Struct> structs = new();
-    
     private TypeEnvironment(TypeEnvironment parent)
     {
         this.parent = parent;
@@ -56,11 +55,11 @@ public class TypeEnvironment
     {
         var newType = new Struct(type.Name.Literal, []);
         RegisterType(type.Name.Literal, newType);
-        
+
         foreach (var (typeExpr, nameExpr) in type.Body)
         {
             var typeInstance = ResolveTypeExpression(typeExpr);
-            newType.Fields.Add(new Field(name: nameExpr.Literal, type: typeInstance));
+            newType.Fields.Add(new Field(nameExpr.Literal, typeInstance));
         }
     }
 
@@ -68,7 +67,7 @@ public class TypeEnvironment
     {
         var functionEnv = new TypeEnvironment(this);
         List<Type> inputs = [];
-        
+
         foreach (var (typeExpr, nameExpr) in function.Args)
         {
             var typeInstance = ResolveTypeExpression(typeExpr);
@@ -80,18 +79,18 @@ public class TypeEnvironment
         foreach (var expr in function.Body)
         {
             functionEnv.ReadStatement(expr);
-            if(expr is ReturnExpression returnExpr)
+            if (expr is ReturnExpression returnExpr)
                 returnType = functionEnv.ResolveType(returnExpr.Expression);
         }
-        
+
         var functionType = new Function(inputs.Count == 1 ? inputs[0] : new Union(inputs), returnType);
-        RegisterSymbol(function.Name.Literal, functionType); 
+        RegisterSymbol(function.Name.Literal, functionType);
     }
 
     private Type ResolveTypeExpression(TypeExpression expression)
     {
         Type? foundType = null;
-        
+
         switch (expression)
         {
             case SimpleTypeExpression simpleType:
@@ -104,16 +103,17 @@ public class TypeEnvironment
                 // TODO
                 break;
         }
-        
-        if(foundType == null)
-            return parent?.ResolveTypeExpression(expression) ?? throw new UnknownTypeException("Unknown type: " + expression);
+
+        if (foundType == null)
+            return parent?.ResolveTypeExpression(expression) ??
+                   throw new UnknownTypeException("Unknown type: " + expression);
         return foundType;
     }
 
     public Type ResolveType(Expression expression)
     {
         Type? foundType = null;
-        
+
         switch (expression)
         {
             case NameExpression name:
@@ -130,61 +130,84 @@ public class TypeEnvironment
                 AssertTypeIs(op.Left, Bit.Instance);
                 AssertTypeIs(op.Right, Bit.Instance);
                 return Bit.Instance;
+            case UnaryExpression unary:
+                AssertTypeIs(unary.Operand, Bit.Instance);
+                return Bit.Instance;
             case ConditionalExpression cond:
                 AssertTypeIs(cond.Condition, Bit.Instance);
                 var condType = ResolveType(cond.IfTrue);
                 AssertTypeIs(cond.IfFalse, condType);
                 return condType;
+            case CallExpression call:
+                return ResolveCallType(call);
             case ImplicitObjectExpression:
                 return Bits.Instance;
             case ExplicitObjectExpression obj:
                 return InferStruct(obj);
         }
-        
-        if(foundType == null)
-            return parent?.ResolveType(expression) ?? throw new UnknownSymbolException("Unknown type for symbol: " + expression);
+
+        if (foundType == null)
+            return parent?.ResolveType(expression) ??
+                   throw new UnknownSymbolException("Unknown type for symbol: " + expression);
         return foundType;
+    }
+
+    private Type ResolveCallType(CallExpression call)
+    {
+        var targetType = ResolveType(call.Expression);
+        if (targetType is not Function functionType)
+            throw new WrongTypeException("Can't call non-function " + call.Expression);
+
+        var argumentsUsed = call.Arguments.Count;
+        var argumentsExpected = functionType.ArgumentCount;
+
+        if (argumentsUsed != argumentsExpected)
+            throw new WrongCallArgumentException(
+                $"Target expression takes {argumentsUsed} arguments, trying to call with {argumentsExpected}");
+
+        for (var i = 0; i < argumentsUsed; i++) AssertTypeIs(call.Arguments[i], functionType.GetArg(i));
+
+        return functionType.Output;
     }
 
     private Struct InferStruct(ExplicitObjectExpression obj)
     {
         var possibleTargets = structs.Where(s => s.Fields.Count == obj.Body.Count).ToList();
 
-        Struct? foundStruct = null;
-        
         if (possibleTargets.Any())
         {
             var typedBody = obj.Body.Select(field => new Field(field.Item1.Literal, ResolveType(field.Item2))).ToList();
             possibleTargets = possibleTargets.Where(s => s.Fields.SequenceEqual(typedBody)).ToList();
 
-            if(possibleTargets.Count == 1) return possibleTargets.First();
-            if (possibleTargets.Count > 1) throw new AmbiguousObjectTypeException("Can't infer object type, too many options");
+            if (possibleTargets.Count == 1) return possibleTargets.First();
+            if (possibleTargets.Count > 1)
+                throw new AmbiguousObjectTypeException("Can't infer object type, too many options");
         }
-        
+
         return parent?.InferStruct(obj) ?? throw new UnknownTypeException("Can't infer object type for " + obj);
     }
 
     private void AssertTypeIs(Expression expression, Type expectedType)
     {
         var actual = ResolveType(expression);
-        if(actual != expectedType)
+        if (actual != expectedType)
             throw new WrongTypeException("Expected expression of type " + expression.Literal + ", got " + actual);
     }
 
     private void ValidateStructFields(ExplicitObjectExpression obj, Type type)
     {
-        if(type is not Struct objType)
-           throw new WrongTypeException("Expected structured type, got: " + type);
-        if(obj.Body.Count != objType.Fields.Count)
+        if (type is not Struct objType)
+            throw new WrongTypeException("Expected structured type, got: " + type);
+        if (obj.Body.Count != objType.Fields.Count)
             throw new WrongTypeException("Wrong number of body args when instantiating object");
-        
+
         var dict = new Dictionary<string, Type>();
         objType.Fields.ForEach(field => dict[field.Name] = field.Type);
 
         foreach (var (nameExpr, expr) in obj.Body)
         {
             dict.TryGetValue(nameExpr.Literal, out var expectedType);
-            if(expectedType == null)
+            if (expectedType == null)
                 throw new WrongTypeException($"Unknown field accessor {nameExpr.Literal}");
             var actualType = ResolveType(expr);
 
@@ -195,10 +218,13 @@ public class TypeEnvironment
 
     private void RegisterType(string name, Type type)
     {
-        if(type is Struct s) structs.Add(s);
+        if (type is Struct s) structs.Add(s);
         if (!availableTypes.TryAdd(name, type))
             throw new SymbolAlreadyDefinedException("Already defined type " + name);
     }
-    
-    private void RegisterSymbol(string name, Type type) => knownSymbols.Add(name, type);
+
+    private void RegisterSymbol(string name, Type type)
+    {
+        knownSymbols.Add(name, type);
+    }
 }

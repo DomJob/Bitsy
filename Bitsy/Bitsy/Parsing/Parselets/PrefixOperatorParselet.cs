@@ -15,6 +15,8 @@ public class PrefixOperatorParselet : PrefixParselet
     public Expression Parse(Parser parser, Token token)
     {
         var operand = parser.ParseExpression(Precedence);
+        if (token.Type == TokenType.Return)
+            return new ReturnExpression(token, operand);
         return new UnaryExpression(token, operand);
     }
 }

@@ -13,6 +13,9 @@ public class Union : Type
     {
         return other is Union u && u.Types == Types;
     }
-    
-    public override string ToString() => $"({string.Join(", ", Types.Select(t => t.ToString()))})";
+
+    public override string ToString()
+    {
+        return $"({string.Join(", ", Types.Select(t => t.ToString()))})";
+    }
 }
