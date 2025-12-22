@@ -46,10 +46,7 @@ public class ObjectParselet : PrefixParselet
             return new ImplicitObjectExpression(body);
         }
 
-        if (parser.Match(TokenType.RightBrace))
-        {
-            return new ImplicitObjectExpression([expr]);
-        }
+        if (parser.Match(TokenType.RightBrace)) return new ImplicitObjectExpression([expr]);
 
         throw new ParserException("Expected colon or comma after first expression in object");
     }

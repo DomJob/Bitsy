@@ -286,7 +286,7 @@ public class ParserTests
 
         Verify<ImplicitObjectExpression>("{1}");
     }
-    
+
     [Test]
     public void ImplicitObject_Complex()
     {
