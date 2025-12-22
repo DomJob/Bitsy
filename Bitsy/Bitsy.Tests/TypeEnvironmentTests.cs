@@ -3,6 +3,7 @@ using Bitsy.Analyzing.Types;
 using Bitsy.Lexing;
 using Bitsy.Parsing;
 using Bitsy.Reading;
+using Microsoft.Testing.Platform.Extensions.TestHostControllers;
 using Type = Bitsy.Analyzing.Type;
 
 namespace Bitsy;
@@ -141,6 +142,30 @@ public class TypeEnvironmentTests
     }
     
     [Test]
+    public void DefiningCustomType_WithoutUsingIt_IsInterpretedAsBits()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.Expression("{0,1}").HasType<Bits>("Bits");
+    }
+    
+    [Test]
+    public void DefiningCustomType_UsingItWithoutCasting_IsInferred()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.Expression("{b1: 0, b2: 1}").HasType<Struct>("SomeType");
+    }
+    
+    [Test]
     public void DefiningCustomType_AndUsingIt_2()
     {
         When.ReadStatement("""
@@ -150,6 +175,19 @@ public class TypeEnvironmentTests
                            }
                            """)
             .Then.Expression("{b1: 0, b2: 1} as SomeType").HasType<Struct>("SomeType");
+    }
+    
+    [Test]
+    public void DefiningCustomType_AndUsingIt_WrongTypeField()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.ReadStatement("b = {b1: 0, b2: 1} as SomeType")
+            .Then.Expression("{b1: 0, b2: b} as SomeType").Throws<WrongTypeException>();
     }
     
     [Test]
@@ -219,6 +257,49 @@ public class TypeEnvironmentTests
                            }
                            """)
             .Then.Expression("1 as SomeType").HasType<Struct>("SomeType");
+    }
+
+    [Test]
+    public void ConditionalTyping_FirstExpressionHasToBeBit()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            SomeType more
+                           }
+                           """)
+            .And.ReadStatement("cond = {1,0} as SomeType")
+            .Then.Expression("cond ? 1 : 0").Throws<WrongTypeException>();
+    }
+    
+    [Test]
+    public void ConditionalTyping_BothBranchHaveToHaveSameType()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadStatement("cond = 1")
+            .And.ReadStatement("a = {1,0} as SomeType")
+            .And.ReadStatement("b = 1")
+            .Then.Expression("cond ? a : b").Throws<WrongTypeException>();
+    }
+    
+    [Test]
+    public void ConditionalTyping_HappyPathResultingTypeIsBranchesType()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadStatement("cond = 1")
+            .And.ReadStatement("a = {1,0} as SomeType")
+            .And.ReadStatement("b = {b1: 1, b2: 1} as SomeType")
+            .Then.Expression("cond ? a : b").HasType<Struct>("SomeType");
     }
 
     internal class TestScenario

@@ -35,3 +35,11 @@ public class UnknownFieldException : Exception
         
     }
 }
+
+public class AmbiguousObjectTypeException : Exception
+{
+    public AmbiguousObjectTypeException(string message) : base(message)
+    {
+        
+    }
+}

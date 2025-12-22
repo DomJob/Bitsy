@@ -11,6 +11,7 @@ public class TypeEnvironment
 
     private Dictionary<string, Type> availableTypes = new();
     private Dictionary<string, Type> knownSymbols = new();
+    private List<Struct> structs = new();
     
     private TypeEnvironment(TypeEnvironment parent)
     {
@@ -120,16 +121,48 @@ public class TypeEnvironment
                 foundType = ResolveTypeExpression((TypeExpression)casting.Right);
                 break;
             case BinaryExpression op:
-                if(ResolveType(op.Left) != Bit.Instance)
-                    throw new WrongTypeException("Expected expression of type Bit" + op.Left.Literal);
-                if(ResolveType(op.Right) != Bit.Instance)
-                    throw new WrongTypeException("Expected expression of type Bit" + op.Right.Literal);
+                AssertTypeIs(op.Left, Bit.Instance);
+                AssertTypeIs(op.Right, Bit.Instance);
                 return Bit.Instance;
+            case ConditionalExpression cond:
+                AssertTypeIs(cond.Condition, Bit.Instance);
+                var condType = ResolveType(cond.IfTrue);
+                AssertTypeIs(cond.IfFalse, condType);
+                return condType;
+            case ImplicitObjectExpression:
+                return Bits.Instance;
+            case ExplicitObjectExpression obj:
+                return InferStruct(obj);
         }
         
         if(foundType == null)
             return parent?.ResolveType(expression) ?? throw new UnknownSymbolException("Unknown type for symbol: " + expression);
         return foundType;
+    }
+
+    private Struct InferStruct(ExplicitObjectExpression obj)
+    {
+        var possibleTargets = structs.Where(s => s.Fields.Count == obj.Body.Count).ToList();
+
+        Struct? foundStruct = null;
+        
+        if (possibleTargets.Any())
+        {
+            var typedBody = obj.Body.Select(field => new Field(field.Item1.Literal, ResolveType(field.Item2))).ToList();
+            possibleTargets = possibleTargets.Where(s => s.Fields.SequenceEqual(typedBody)).ToList();
+
+            if(possibleTargets.Count == 1) return possibleTargets.First();
+            if (possibleTargets.Count > 1) throw new AmbiguousObjectTypeException("Can't infer object type, too many options");
+        }
+        
+        return parent?.InferStruct(obj) ?? throw new UnknownTypeException("Can't infer object type for " + obj);
+    }
+
+    private void AssertTypeIs(Expression expression, Type expectedType)
+    {
+        var actual = ResolveType(expression);
+        if(actual != expectedType)
+            throw new WrongTypeException("Expected expression of type " + expression.Literal + ", got " + actual);
     }
 
     private void ValidateStructFields(ExplicitObjectExpression obj, Type type)
@@ -154,7 +187,11 @@ public class TypeEnvironment
         }
     }
 
-    private void RegisterType(string name, Type type) => availableTypes.Add(name, type);
+    private void RegisterType(string name, Type type)
+    {
+        if(type is Struct s) structs.Add(s);
+        availableTypes.Add(name, type);   
+    }
     
     private void RegisterSymbol(string name, Type type) => knownSymbols.Add(name, type);
 }
