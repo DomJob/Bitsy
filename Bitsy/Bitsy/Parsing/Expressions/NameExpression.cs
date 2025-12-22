@@ -17,7 +17,7 @@ public class NameExpression : Expression
 
     public Token Name { get; }
 
-    public new Position Position => Name.Position;
+    public override Position Position => Name.Position;
 
     public override string ToString()
     {

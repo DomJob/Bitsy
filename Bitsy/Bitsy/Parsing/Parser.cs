@@ -41,15 +41,15 @@ public class Parser
 
     private ReturnExpression ParseReturn()
     {
-        Consume(TokenType.Return);
-        return new ReturnExpression(ParseExpression());
+        var returnToken = Consume(TokenType.Return);
+        return new ReturnExpression(returnToken, ParseExpression());
     }
 
     public TypeExpression ParseTypeSignature()
     {
         var token = Consume();
 
-        TypeExpression left = null;
+        TypeExpression left;
 
         switch (token.Type)
         {
@@ -57,7 +57,7 @@ public class Parser
                 left = new SimpleTypeExpression(token, ParseTemplates());
                 break;
             case TokenType.LeftParenthesis when Match(TokenType.RightParenthesis):
-                left = new UnionTypeExpression([]);
+                left = new UnionTypeExpression(token.Position);
                 break;
             case TokenType.LeftParenthesis:
                 left = ParseTypeSignature();
@@ -173,10 +173,8 @@ public class Parser
 
             var infix = infixParselets[token.Type];
             left = infix.Parse(this, left, token);
-            left.Position = token.Position;
         }
 
-        left.Position = position;
         return left;
     }
 

@@ -4,7 +4,7 @@ namespace Bitsy.Parsing;
 
 public abstract class Expression
 {
-    public Position Position { get; set; }
+    public abstract Position Position { get; }
 
     public string Literal => ToString()!;
 }

@@ -1,3 +1,5 @@
+using Bitsy.Reading;
+
 namespace Bitsy.Parsing.Expressions;
 
 public class TypeDeclaration : Expression
@@ -11,6 +13,8 @@ public class TypeDeclaration : Expression
     public TypeExpression Name { get; }
 
     public List<(TypeExpression, NameExpression)> Body { get; }
+
+    public override Position Position => Name.Position;
 
 
     public override string ToString()

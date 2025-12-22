@@ -4,17 +4,14 @@ namespace Bitsy.Parsing;
 
 public class ParserException : Exception
 {
-    public ParserException(string message, Token token)
+    public ParserException(string message, Token token) : base(message)
     {
-        Message = message;
         Token = token;
     }
 
-    public ParserException(string message)
+    public ParserException(string message) : base(message)
     {
-        Message = message;
     }
 
-    public string Message { get; }
     public Token? Token { get; }
 }

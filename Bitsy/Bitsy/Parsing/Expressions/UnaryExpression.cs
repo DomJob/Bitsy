@@ -1,4 +1,5 @@
 using Bitsy.Lexing;
+using Bitsy.Reading;
 
 namespace Bitsy.Parsing.Expressions;
 
@@ -12,6 +13,8 @@ public class UnaryExpression : Expression
 
     public Token Operation { get; }
     public Expression Operand { get; }
+
+    public override Position Position => Operation.Position;
 
     public override string ToString()
     {

@@ -1,3 +1,5 @@
+using Bitsy.Reading;
+
 namespace Bitsy.Parsing.Expressions;
 
 public class ConditionalExpression : Expression
@@ -12,6 +14,8 @@ public class ConditionalExpression : Expression
     public Expression Condition { get; }
     public Expression IfTrue { get; }
     public Expression IfFalse { get; }
+
+    public override Position Position => Condition.Position;
 
     public override string ToString()
     {

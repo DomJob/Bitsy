@@ -43,8 +43,7 @@ public class LineReader : IReader
         return new Position
         {
             Column = column,
-            Line = line,
-            FileName = "<>"
+            Line = line
         };
     }
 }

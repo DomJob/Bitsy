@@ -9,10 +9,10 @@ public class GroupParselet : PrefixParselet
     {
         if (parser.Match(TokenType.RightParenthesis))
         {
-            var input = new UnionTypeExpression([]);
+            var input = new UnionTypeExpression(token.Position);
             if (!parser.Match(TokenType.Arrow))
                 return input;
-            var output = (TypeExpression)parser.ParseTypeSignature();
+            var output = parser.ParseTypeSignature();
             return new FunctionTypeExpression(input, output);
         }
 

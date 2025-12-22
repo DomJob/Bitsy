@@ -1,3 +1,5 @@
+using Bitsy.Reading;
+
 namespace Bitsy.Parsing.Expressions;
 
 public class CallExpression : Expression
@@ -11,6 +13,8 @@ public class CallExpression : Expression
     public Expression Expression { get; }
 
     public List<Expression> Arguments { get; }
+
+    public override Position Position => Expression.Position;
 
     public override string ToString()
     {

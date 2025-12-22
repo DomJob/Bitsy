@@ -4,13 +4,10 @@ namespace Bitsy.Parsing;
 
 public class SyntaxError : Exception
 {
-    public SyntaxError(string message, Position position)
+    public SyntaxError(string message, Position position) : base(message)
     {
-        Message = message;
         Position = position;
     }
-
-    public string Message { get; }
 
     public Position Position { get; }
 }
