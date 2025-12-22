@@ -75,6 +75,10 @@ public class Typer
             inputs.Add(typeInstance);
         }
 
+        var inputTypes = inputs.Count == 1 ? inputs[0] : new Union(inputs);
+        var functionType = new Function(inputTypes, Unknown.Instance);
+        RegisterSymbol(function.Name.Literal, functionType);
+        
         Type returnType = new Union([]);
         foreach (var expr in function.Body)
         {
@@ -82,9 +86,7 @@ public class Typer
             if (expr is ReturnExpression returnExpr)
                 returnType = functionEnv.ResolveType(returnExpr.Expression);
         }
-
-        var functionType = new Function(inputs.Count == 1 ? inputs[0] : new Union(inputs), returnType);
-        RegisterSymbol(function.Name.Literal, functionType);
+        if(functionType.Output is Unknown) functionType.Output = returnType;
     }
 
     private Type ResolveTypeExpression(TypeExpression expression)
@@ -159,7 +161,11 @@ public class Typer
             throw new WrongCallArgumentException(
                 $"Target expression takes {argumentsExpected} arguments, trying to call with {argumentsUsed}");
 
-        for (var i = 0; i < argumentsUsed; i++) AssertTypeIs(call.Arguments[i], functionType.GetArg(i));
+        for (var i = 0; i < argumentsUsed; i++)
+        {
+            var callType = ResolveType(call.Arguments[i]);
+            AssertTypeIs(call.Arguments[i], functionType.GetArg(i));
+        }
 
         return functionType.Output;
     }
@@ -184,8 +190,8 @@ public class Typer
     private void AssertTypeIs(Expression expression, Type expectedType)
     {
         var actual = ResolveType(expression);
-        if (actual != expectedType)
-            throw new WrongTypeException("Expected expression of type " + expression.Literal + ", got " + actual);
+        if (actual != Unknown.Instance && actual != expectedType)
+            throw new WrongTypeException("Expected expression of type " + expectedType + ", got " + actual);
     }
 
     private void ValidateStructFields(ExplicitObjectExpression obj, Type type)

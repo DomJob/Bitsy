@@ -9,7 +9,7 @@ public class Function : Type
     }
 
     public Type Input { get; }
-    public Type Output { get; }
+    public Type Output { get; set; }
 
     public int ArgumentCount => Input is Union u ? u.Types.Count : 1;
 
