@@ -402,6 +402,22 @@ public class TyperTests
             .Then.Expression("cond ? a : b").HasType<Struct>("SomeType");
     }
 
+    [Test]
+    public void BindRecursiveFunction()
+    {
+        When.ReadStatement("Number { Bit n }")
+            .And.ReadStatement("isOne(Number n) { return 0 }")
+            .And.ReadStatement("minusOne(Number n) { return n }")
+            .And.ReadStatement("multiply(Number a, Number b) { return a }")
+            .And.ReadStatement("""
+                             factorial(Number n) {
+                                 return isOne(n) ? 1 as Number
+                                     : multiply(n, factorial(minusOne(n)))
+                             }
+                             """)
+            .Then.Expression("factorial").HasType<Function>("(Number->Number)");
+    }
+
     internal class TestScenario
     {
         private readonly Typer typer;

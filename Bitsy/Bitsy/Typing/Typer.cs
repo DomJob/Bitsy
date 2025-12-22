@@ -109,25 +109,24 @@ public class Typer
 
     public Type ResolveType(Expression expression)
     {
-        Type? foundType = null;
+        Type? type;
 
         switch (expression)
         {
             case NameExpression name:
-                knownSymbols.TryGetValue(name.Name.Literal, out foundType);
+                if(knownSymbols.TryGetValue(name.Name.Literal, out type)) return type;
                 break;
             case BinaryExpression { Left: ExplicitObjectExpression left, Operation.Type: TokenType.As } casting:
-                foundType = ResolveTypeExpression((TypeExpression)casting.Right);
-                ValidateStructFields(left, foundType);
-                break;
+                type = ResolveTypeExpression((TypeExpression)casting.Right);
+                ValidateStructFields(left, type);
+                return type;
             case BinaryExpression { Operation.Type: TokenType.As } casting:
-                foundType = ResolveTypeExpression((TypeExpression)casting.Right);
-                break;
+                return ResolveTypeExpression((TypeExpression)casting.Right);
             case BinaryExpression op:
                 AssertTypeIs(op.Left, Bit.Instance);
                 AssertTypeIs(op.Right, Bit.Instance);
                 return Bit.Instance;
-            case UnaryExpression unary:
+            case UnaryExpression unary when unary.Operation.Type != TokenType.Return:
                 AssertTypeIs(unary.Operand, Bit.Instance);
                 return Bit.Instance;
             case ConditionalExpression cond:
@@ -142,11 +141,9 @@ public class Typer
             case ExplicitObjectExpression obj:
                 return InferStruct(obj);
         }
-
-        if (foundType == null)
-            return parent?.ResolveType(expression) ??
-                   throw new UnknownSymbolException("Unknown type for symbol: " + expression);
-        return foundType;
+        
+        if(parent == null) throw new UnknownSymbolException("Unknown type for symbol: " + expression);
+        return parent.ResolveType(expression);
     }
 
     private Type ResolveCallType(CallExpression call)
