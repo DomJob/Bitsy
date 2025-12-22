@@ -7,7 +7,7 @@ using Type = Bitsy.Analyzing.Type;
 
 namespace Bitsy;
 
-public class TypeEnvironmentTests
+public class TyperTests
 {
     private TestScenario When => new();
 
@@ -142,7 +142,7 @@ public class TypeEnvironmentTests
         When.ReadStatement("someFunc() { innerFunc() { return 1} return innerFunc }")
             .Then
             .Expression("someFunc").HasType<Function>("(()->(()->Bit))")
-            .And.Expression("(someFunc())()").HasType<Bit>();
+            .And.Expression("someFunc()()").HasType<Bit>();
     }
 
     [Test]
@@ -380,12 +380,12 @@ public class TypeEnvironmentTests
 
     internal class TestScenario
     {
-        private readonly TypeEnvironment typeEnvironment;
+        private readonly Typer typer;
         private Expression? lastExpression;
 
         internal TestScenario()
         {
-            typeEnvironment = new TypeEnvironment();
+            typer = new Typer();
         }
 
         public TestScenario And => this;
@@ -401,7 +401,7 @@ public class TypeEnvironmentTests
 
         internal TestScenario ReadStatement(string code)
         {
-            typeEnvironment.ReadStatement(Parse(code));
+            typer.ReadStatement(Parse(code));
             return this;
         }
 
@@ -409,7 +409,7 @@ public class TypeEnvironmentTests
         {
             try
             {
-                typeEnvironment.ReadStatement(Parse(code));
+                typer.ReadStatement(Parse(code));
                 Assert.Fail();
             }
             catch (T e)
@@ -428,7 +428,7 @@ public class TypeEnvironmentTests
 
         internal TestScenario HasType<T>() where T : Type
         {
-            var type = typeEnvironment.ResolveType(lastExpression!);
+            var type = typer.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(type, Is.InstanceOf<T>());
             return this;
@@ -436,7 +436,7 @@ public class TypeEnvironmentTests
 
         internal TestScenario HasType<T>(Func<T, bool> suchThat) where T : Type
         {
-            var type = (T)typeEnvironment.ResolveType(lastExpression!);
+            var type = (T)typer.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(suchThat(type!), Is.True);
 
@@ -445,7 +445,7 @@ public class TypeEnvironmentTests
 
         internal TestScenario HasType<T>(string expected) where T : Type
         {
-            var type = (T)typeEnvironment.ResolveType(lastExpression!);
+            var type = (T)typer.ResolveType(lastExpression!);
             Console.WriteLine(type);
             Assert.That(type, Is.InstanceOf<T>());
             Assert.That(type.ToString(), Is.EqualTo(expected));
@@ -456,7 +456,7 @@ public class TypeEnvironmentTests
         {
             try
             {
-                typeEnvironment.ResolveType(lastExpression!);
+                typer.ResolveType(lastExpression!);
                 Assert.Fail();
             }
             catch (T)

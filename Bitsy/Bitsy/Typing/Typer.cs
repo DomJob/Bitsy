@@ -5,19 +5,19 @@ using Bitsy.Parsing.Expressions;
 
 namespace Bitsy.Analyzing;
 
-public class TypeEnvironment
+public class Typer
 {
     private readonly Dictionary<string, Type> availableTypes = new();
     private readonly Dictionary<string, Type> knownSymbols = new();
-    private readonly TypeEnvironment? parent;
+    private readonly Typer? parent;
     private readonly List<Struct> structs = new();
 
-    private TypeEnvironment(TypeEnvironment parent)
+    private Typer(Typer parent)
     {
         this.parent = parent;
     }
 
-    public TypeEnvironment()
+    public Typer()
     {
         RegisterType("Bits", Bits.Instance);
         RegisterType("Bit", Bit.Instance);
@@ -65,7 +65,7 @@ public class TypeEnvironment
 
     private void ReadFunctionDeclaration(FunctionDeclaration function)
     {
-        var functionEnv = new TypeEnvironment(this);
+        var functionEnv = new Typer(this);
         List<Type> inputs = [];
 
         foreach (var (typeExpr, nameExpr) in function.Args)
