@@ -16,13 +16,13 @@ public class ObjectParselet : PrefixParselet
 
         if (parser.Match(TokenType.Colon)) // Explicit
         {
-            var key = expr;
+            var key = (NameExpression)expr;
             var value = parser.ParseExpression();
-            List<(Expression, Expression)> body = [(key, value)];
+            List<(NameExpression, Expression)> body = [(key, value)];
 
             while (parser.Match(TokenType.Comma))
             {
-                key = parser.ParseExpression();
+                key = parser.ParseName();
                 parser.Consume(TokenType.Colon);
                 value = parser.ParseExpression();
                 body.Add((key, value));

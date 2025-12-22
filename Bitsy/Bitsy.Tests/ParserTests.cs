@@ -240,6 +240,14 @@ public class ParserTests
 
         Verify<ExplicitObjectExpression>("{a: 1, b: 2, c: 3}");
     }
+    
+    [Test]
+    public void ExplicitObject_Single()
+    {
+        ParseStatement("{a: 1}");
+
+        Verify<ExplicitObjectExpression>("{a: 1}");
+    }
 
     [Test]
     public void ExplicitObject_LessSimple()

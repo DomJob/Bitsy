@@ -27,3 +27,11 @@ public class WrongTypeException : Exception
     {
     }
 }
+
+public class UnknownFieldException : Exception
+{
+    public UnknownFieldException(string message) : base(message)
+    {
+        
+    }
+}

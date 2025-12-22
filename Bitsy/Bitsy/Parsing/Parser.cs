@@ -153,7 +153,7 @@ public class Parser
         return body;
     }
 
-    private NameExpression ParseName()
+    public NameExpression ParseName()
     {
         return new NameExpression(Consume(TokenType.Identifier));
     }

@@ -36,12 +36,26 @@ public class TypeEnvironment
                 ReadFunctionDeclaration(function);
                 break; // TODO
             case TypeDeclaration type:
+                ReadTypeDeclaration(type);
                 break; // TODO
             case ReturnExpression returnExpression:
                 break;
             default:
                 throw new TypeException("Expected a statement, got: " + expression);
         }
+    }
+
+    private void ReadTypeDeclaration(TypeDeclaration type)
+    {
+        var fields = new List<Field>();
+
+        foreach (var (typeExpr, nameExpr) in type.Body)
+        {
+            var typeInstance = ResolveTypeExpression(typeExpr);
+            fields.Add(new Field(name: nameExpr.Literal, type: typeInstance));
+        }
+        
+        RegisterType(type.Name.Literal,  new Struct(type.Name.Literal, fields));
     }
 
     private void ReadFunctionDeclaration(FunctionDeclaration function)
@@ -99,6 +113,10 @@ public class TypeEnvironment
             case NameExpression name:
                 knownSymbols.TryGetValue(name.Name.Literal, out foundType);
                 break;
+            case BinaryExpression { Left: ExplicitObjectExpression left, Operation.Type: TokenType.As } casting:
+                foundType = ResolveTypeExpression((TypeExpression)casting.Right);
+                ValidateStructFields(left, foundType);
+                break;
             case BinaryExpression { Operation.Type: TokenType.As } casting:
                 foundType = ResolveTypeExpression((TypeExpression)casting.Right);
                 break;
@@ -114,7 +132,29 @@ public class TypeEnvironment
             return parent?.ResolveType(expression) ?? throw new UnknownSymbolException("Unknown type for symbol: " + expression);
         return foundType;
     }
-    
+
+    private void ValidateStructFields(ExplicitObjectExpression obj, Type type)
+    {
+        if(type is not Struct objType)
+           throw new WrongTypeException("Expected structured type, got: " + type);
+        if(obj.Body.Count != objType.Fields.Count)
+            throw new WrongTypeException("Wrong number of body args when instantiating object");
+        
+        var dict = new Dictionary<string, Type>();
+        objType.Fields.ForEach(field => dict[field.Name] = field.Type);
+
+        foreach (var (nameExpr, expr) in obj.Body)
+        {
+            dict.TryGetValue(nameExpr.Literal, out var expectedType);
+            if(expectedType == null)
+                throw new WrongTypeException($"Unknown field accessor {nameExpr.Literal}");
+            var actualType = ResolveType(expr);
+
+            if (expectedType != actualType)
+                throw new WrongTypeException("Wrong type when resolving explicit object instantiation");
+        }
+    }
+
     private void RegisterType(string name, Type type) => availableTypes.Add(name, type);
     
     private void RegisterSymbol(string name, Type type) => knownSymbols.Add(name, type);

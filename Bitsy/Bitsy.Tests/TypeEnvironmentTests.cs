@@ -16,7 +16,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1")
             .Then
-            .Expression("a").Is<Bit>();
+            .Expression("a").HasType<Bit>();
     }
 
     [Test]
@@ -24,9 +24,9 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1").And.ReadStatement("b = 0")
             .Then
-            .Expression("a").Is<Bit>()
+            .Expression("a").HasType<Bit>()
             .And
-            .Expression("b").Is<Bit>();
+            .Expression("b").HasType<Bit>();
     }
 
     [Test]
@@ -34,7 +34,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1").And.ReadStatement("b = a")
             .Then
-            .Expression("b").Is<Bit>();
+            .Expression("b").HasType<Bit>();
     }
 
     [Test]
@@ -50,8 +50,8 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1 ^ 0")
             .And.ReadStatement("b = a ^ 1")
-            .Then.Expression("a").Is<Bit>()
-            .And.Expression("b").Is<Bit>();
+            .Then.Expression("a").HasType<Bit>()
+            .And.Expression("b").HasType<Bit>();
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1 as Bit")
             .Then
-            .Expression("a").Is<Bit>();
+            .Expression("a").HasType<Bit>();
     }
     
     [Test]
@@ -67,7 +67,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("a = 1 as Bits")
             .Then
-            .Expression("a").Is<Bits>();
+            .Expression("a").HasType<Bits>();
     }
 
     [Test]
@@ -75,7 +75,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("someFunc() { }")
             .Then
-            .Expression("someFunc").Is<Function>("(()->())");
+            .Expression("someFunc").HasType<Function>("(()->())");
     }
 
     [Test]
@@ -83,7 +83,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("someFunc() { return 1 }")
             .Then
-            .Expression("someFunc").Is<Function>("(()->Bit)");
+            .Expression("someFunc").HasType<Function>("(()->Bit)");
     }
 
     [Test]
@@ -91,7 +91,7 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("someFunc(Bit a) { return 1 }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit });
+            .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
 
     [Test]
@@ -100,9 +100,7 @@ public class TypeEnvironmentTests
         When.ReadStatement("someFunc(Bit a, Bit b) { return 1 }")
             .Then
             .Expression("someFunc")
-            .Is<Function>(f => f is { Output: Bit })
-            .And.Is<Function>(f =>
-                f.Input is Union { Types.Count: 2 } u && u.Types[0] == Bit.Instance && u.Types[1] == Bit.Instance);
+            .HasType<Function>("((Bit, Bit)->Bit)");
     }
 
     [Test]
@@ -110,7 +108,16 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("someFunc(Bit a) { return a }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit });
+            .Expression("someFunc").HasType<Function>("(Bit->Bit)");
+    }
+    
+    [Test]
+    public void BindingFunctionThatReturnsOutsideValue()
+    {
+        When.ReadStatement("b = 1")
+            .And.ReadStatement("someFunc(Bit a) { return a ^ b }")
+            .Then
+            .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
 
     [Test]
@@ -118,7 +125,43 @@ public class TypeEnvironmentTests
     {
         When.ReadStatement("main(Bits input) { return input as Bit }")
             .Then
-            .Expression("main").Is<Function>(f => f is { Input: Bits, Output: Bit });
+            .Expression("main").HasType<Function>("(Bits->Bit)");
+    }
+
+    [Test]
+    public void DefiningCustomType_AndUsingIt_1()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.Expression("{0,1} as SomeType").HasType<Struct>("SomeType");
+    }
+    
+    [Test]
+    public void DefiningCustomType_AndUsingIt_2()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.Expression("{b1: 0, b2: 1} as SomeType").HasType<Struct>("SomeType");
+    }
+    
+    [Test]
+    public void DefiningCustomType_AndUsingIt_WrongFieldName()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .Then.Expression("{b1: 0, zz: 1} as SomeType").Throws<WrongTypeException>();
     }
 
     internal class TestScenario
@@ -154,7 +197,7 @@ public class TypeEnvironmentTests
             return this;
         }
 
-        internal TestScenario Is<T>() where T : Type
+        internal TestScenario HasType<T>() where T : Type
         {
             var type = typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
@@ -162,7 +205,7 @@ public class TypeEnvironmentTests
             return this;
         }
 
-        internal TestScenario Is<T>(Func<T, bool> suchThat) where T : Type
+        internal TestScenario HasType<T>(Func<T, bool> suchThat) where T : Type
         {
             var type = (T)typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
@@ -171,7 +214,7 @@ public class TypeEnvironmentTests
             return this;
         }
         
-        internal TestScenario Is<T>(string expected) where T : Type
+        internal TestScenario HasType<T>(string expected) where T : Type
         {
             var type = (T)typeEnvironment.ResolveType(lastExpression);
             Console.WriteLine(type);
