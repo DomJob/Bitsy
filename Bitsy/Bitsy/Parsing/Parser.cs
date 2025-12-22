@@ -18,40 +18,34 @@ public class Parser
         RegisterInfixTokens();
     }
 
-    public Expression ParseStatement()
+    public Expression Next()
     {
         if (NextTokenIs(TokenType.Return))
-            return ParseReturnStatement();
-        if (!NextTokenIs(TokenType.Identifier))
-            return ParseExpression();
+            return ParseReturn();
 
-        switch (Peek(2).Type)
+        return Peek().Type switch
         {
-            case TokenType.Assignment:
-                return ParseAssignment();
-            case TokenType.LeftParenthesis:
-                return ParseFunction();
-            case TokenType.LeftBrace:
-            case TokenType.LeftAngle:
-                return ParseTypeDefinition();
-            case TokenType.Arrow:
-                return ParseTypeSignature();
-            default:
-                return ParseExpression();
-        }
+            TokenType.Identifier when Peek(2).Type == TokenType.Assignment => ParseAssignment(),
+            TokenType.Identifier when Peek(2).Type == TokenType.LeftParenthesis => ParseFunction(),
+            _ => ParseExpression()
+        };
     }
 
-    private BinaryExpression ParseAssignment()
+    private AssignmentExpression ParseAssignment()
     {
-        return new BinaryExpression(ParseName(), Consume(TokenType.Assignment), ParseExpression());
+        var name = ParseName();
+        Consume(TokenType.Assignment);
+        var expression = ParseExpression();
+        return new AssignmentExpression(name, expression);
     }
 
-    private UnaryExpression ParseReturnStatement()
+    private ReturnExpression ParseReturn()
     {
-        return new UnaryExpression(Consume(TokenType.Return), ParseExpression());
+        Consume(TokenType.Return);
+        return new ReturnExpression(ParseExpression());
     }
 
-    public TypeExpression ParseTypeSignature(bool forbidUnions = false)
+    public TypeExpression ParseTypeSignature()
     {
         var token = Consume();
 
@@ -59,7 +53,7 @@ public class Parser
 
         switch (token.Type)
         {
-            case TokenType.Identifier:
+            case TokenType.Type:
                 left = new SimpleTypeExpression(token, ParseTemplates());
                 break;
             case TokenType.LeftParenthesis when Match(TokenType.RightParenthesis):
@@ -73,7 +67,7 @@ public class Parser
                 throw new ParserException("Unexpected token when parsing type", token);
         }
 
-        if (!forbidUnions && NextTokenIs(TokenType.Comma))
+        if (NextTokenIs(TokenType.Comma))
         {
             var types = new List<TypeExpression> { left! };
             while (Match(TokenType.Comma))
@@ -93,40 +87,11 @@ public class Parser
         List<TypeExpression> templates = [];
         do
         {
-            templates.Add(ParseTypeSignature(true));
+            templates.Add(ParseTypeSignature());
             if (Match(TokenType.RightAngle)) break;
         } while (Match(TokenType.Comma));
 
         return templates;
-    }
-
-    private Expression ParseTypeDefinition()
-    {
-        var name = ParseName();
-        var templates = ParseTemplates();
-
-        if (!Match(TokenType.LeftBrace))
-        {
-            var actualType = new SimpleTypeExpression(name.Name, templates);
-            if (Match(TokenType.Arrow))
-                return new FunctionTypeExpression(actualType, ParseTypeSignature());
-            return actualType;
-        }
-
-        return new TypeDeclaration(name, templates, ParseTypeBody());
-    }
-
-    private List<(TypeExpression Type, NameExpression Name)> ParseTypeBody()
-    {
-        List<(TypeExpression Type, NameExpression Name)> definition = [];
-
-        while (true)
-        {
-            if (Match(TokenType.RightBrace)) break;
-            definition.Add((ParseTypeSignature(), ParseName()));
-        }
-
-        return definition;
     }
 
     private Expression ParseFunction()
@@ -147,9 +112,7 @@ public class Parser
         var parameterName = ParseName();
         List<(TypeExpression, NameExpression)> arguments = [];
 
-        if (firstExpression is NameExpression paramTypeName)
-            arguments.Add((paramTypeName.ToType(), parameterName));
-        else if (firstExpression is TypeExpression paramType)
+        if (firstExpression is TypeExpression paramType)
             arguments.Add((paramType, parameterName));
         else throw new SyntaxError("Expected type", firstExpression.Position);
 
@@ -185,7 +148,7 @@ public class Parser
         Match(TokenType.LeftBrace);
         List<Expression> body = [];
         while (!Match(TokenType.RightBrace))
-            body.Add(ParseStatement());
+            body.Add(Next());
         Match(TokenType.RightBrace);
         return body;
     }
@@ -240,9 +203,9 @@ public class Parser
         return tokenType.Any(t => t == Peek().Type);
     }
 
-    public bool Match(TokenType expected)
+    public bool Match(params TokenType[] tokenType)
     {
-        if (!NextTokenIs(expected)) return false;
+        if (!NextTokenIs(tokenType)) return false;
         Consume();
         return true;
     }
@@ -273,6 +236,7 @@ public class Parser
         Register(TokenType.LeftParenthesis, new GroupParselet());
         Register(TokenType.LeftBrace, new ObjectParselet());
         Register(TokenType.Identifier, new NameParselet());
+        Register(TokenType.Type, new TypeParselet());
         Prefix(TokenType.Return, BindingPower.Return);
         Prefix(TokenType.Not, BindingPower.Not);
     }

@@ -9,8 +9,8 @@ namespace Bitsy;
 
 public class TypeAnalyzerTests
 {
-    private TestScenario When => new TestScenario();
-    
+    private TestScenario When => new();
+
     [Test]
     public void BitBinding_Simple()
     {
@@ -18,7 +18,7 @@ public class TypeAnalyzerTests
             .Then
             .Expression("a").Is<Bit>();
     }
-    
+
     [Test]
     public void BitBinding_TwoSymbols()
     {
@@ -28,7 +28,7 @@ public class TypeAnalyzerTests
             .And
             .Expression("b").Is<Bit>();
     }
-    
+
     [Test]
     public void BitBinding_SymbolResolvesPrevious()
     {
@@ -36,7 +36,7 @@ public class TypeAnalyzerTests
             .Then
             .Expression("b").Is<Bit>();
     }
-    
+
     [Test]
     public void BitBinding_UnknownSymbolThrows()
     {
@@ -49,11 +49,11 @@ public class TypeAnalyzerTests
     public void BindingToBitExpression()
     {
         When.ReadStatement("a = 1 ^ 0")
-        .And.ReadStatement("b = a ^ 1")
-        .Then.Expression("a").Is<Bit>()
-        .And.Expression("b").Is<Bit>();
+            .And.ReadStatement("b = a ^ 1")
+            .Then.Expression("a").Is<Bit>()
+            .And.Expression("b").Is<Bit>();
     }
-    
+
     [Test]
     public void BindingWithAs_SimpleBit()
     {
@@ -67,25 +67,26 @@ public class TypeAnalyzerTests
     {
         When.ReadStatement("someFunc() { }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Union { Types.Count: 0 } });
+            .Expression("someFunc").Is<Function>(f => f is
+                { Input: Union { Types.Count: 0 }, Output: Union { Types.Count: 0 } });
     }
-    
+
     [Test]
     public void BindingFunctionDefinition_ReturnBit()
     {
         When.ReadStatement("someFunc() { return 1 }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Bit});
+            .Expression("someFunc").Is<Function>(f => f is { Input: Union { Types.Count: 0 }, Output: Bit });
     }
-    
+
     [Test]
     public void BindingFunctionDefinition_WithOneReturnBit()
     {
         When.ReadStatement("someFunc(Bit a) { return 1 }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit});
+            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit });
     }
-    
+
     [Test]
     public void BindingFunctionDefinition_WithTwoArguments()
     {
@@ -93,31 +94,35 @@ public class TypeAnalyzerTests
             .Then
             .Expression("someFunc")
             .Is<Function>(f => f is { Output: Bit })
-            .And.Is<Function>(f => f.Input is Union { Types.Count: 2 } u && u.Types[0] == Bit.Instance && u.Types[1] == Bit.Instance);
+            .And.Is<Function>(f =>
+                f.Input is Union { Types.Count: 2 } u && u.Types[0] == Bit.Instance && u.Types[1] == Bit.Instance);
     }
-    
+
     [Test]
     public void BindingFunctionThatReturnsArg()
     {
         When.ReadStatement("someFunc(Bit a) { return a }")
             .Then
-            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit});
+            .Expression("someFunc").Is<Function>(f => f is { Input: Bit, Output: Bit });
     }
-    
+
     [Test]
     public void BindingMainFunction_AndCastingAsBit()
     {
         When.ReadStatement("main(Bits input) { return input as Bit }")
             .Then
-            .Expression("main").Is<Function>(f => f is { Input: Bits, Output: Bit});
+            .Expression("main").Is<Function>(f => f is { Input: Bits, Output: Bit });
     }
 
     internal class TestScenario
     {
-        private TypeAnalyzer typeAnalyzer;
+        private readonly TypeAnalyzer typeAnalyzer;
         private Expression? lastExpression;
-        
-        internal TestScenario() => typeAnalyzer = new TypeAnalyzer();
+
+        internal TestScenario()
+        {
+            typeAnalyzer = new TypeAnalyzer();
+        }
 
         public TestScenario And => this;
         public TestScenario Then => this;
@@ -127,9 +132,9 @@ public class TypeAnalyzerTests
             var reader = new LineReader(code);
             var lexer = new Lexer(reader);
             var parser = new Parser(lexer);
-            return parser.ParseStatement();
+            return parser.Next();
         }
-        
+
         internal TestScenario ReadStatement(string code)
         {
             typeAnalyzer.LoadExpression(Parse(code));

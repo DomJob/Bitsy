@@ -2,11 +2,14 @@ namespace Bitsy.Analyzing.Types;
 
 public class Bit : Type
 {
-    public static Bit Instance = new Bit();
+    public static Bit Instance = new();
 
     private Bit()
     {
     }
 
-    public override bool Equals(Type other) => other is Bit;
+    public override bool Equals(Type other)
+    {
+        return other is Bit;
+    }
 }

@@ -18,11 +18,9 @@ public class NameExpression : Expression
     public Token Name { get; }
 
     public new Position Position => Name.Position;
-    
-    public SimpleTypeExpression ToType(List<TypeExpression>? templates = null)
-    {
-        return new SimpleTypeExpression(Name, templates??[]);
-    }
 
-    public override string ToString() => Name.Literal;
+    public override string ToString()
+    {
+        return Name.Literal;
+    }
 }

@@ -44,6 +44,28 @@ public class LexerTests
     }
 
     [Test]
+    public void TypeName()
+    {
+        WhenCodeIs("SomeType")
+            .Then
+            .NextToken
+            .IsOfType(TokenType.Type)
+            .And.HasValue("SomeType")
+            .And.NextToken.IsOfType(TokenType.End);
+    }
+
+    [Test]
+    public void UppercaseLetter_StillIdentifier()
+    {
+        WhenCodeIs("NOT_A_TYPE")
+            .Then
+            .NextToken
+            .IsOfType(TokenType.Identifier)
+            .And.HasValue("NOT_A_TYPE")
+            .And.NextToken.IsOfType(TokenType.End);
+    }
+
+    [Test]
     public void AssignmentTest()
     {
         WhenCodeIs("someConstant = previousConstant    & 1")

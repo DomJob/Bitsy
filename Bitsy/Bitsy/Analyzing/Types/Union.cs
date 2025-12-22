@@ -9,5 +9,8 @@ public class Union : Type
         Types = types;
     }
 
-    public override bool Equals(Type other) => other is Union u && u.Types == this.Types;
+    public override bool Equals(Type other)
+    {
+        return other is Union u && u.Types == Types;
+    }
 }

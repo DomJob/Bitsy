@@ -62,7 +62,7 @@ public class ParserTests
     {
         ParseStatement("return a");
 
-        Verify<UnaryExpression>("return a");
+        Verify<ReturnExpression>("return a");
     }
 
     [Test]
@@ -70,7 +70,7 @@ public class ParserTests
     {
         ParseStatement("return a&b");
 
-        Verify<UnaryExpression>("return (a & b)");
+        Verify<ReturnExpression>("return (a & b)");
     }
 
     [Test]
@@ -78,7 +78,7 @@ public class ParserTests
     {
         ParseStatement("return ~a");
 
-        Verify<UnaryExpression>("return ~a");
+        Verify<ReturnExpression>("return ~a");
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class ParserTests
     {
         ParseStatement("return ~a as SomeType");
 
-        Verify<UnaryExpression>("return (~a as SomeType)");
+        Verify<ReturnExpression>("return (~a as SomeType)");
     }
 
     [Test]
@@ -214,7 +214,7 @@ public class ParserTests
     {
         ParseStatement("a = 1");
 
-        Verify<BinaryExpression>("a = 1");
+        Verify<AssignmentExpression>("a = 1");
     }
 
     [Test]
@@ -222,7 +222,7 @@ public class ParserTests
     {
         ParseStatement("a = a & (b | c) ^ abc(def,ghi)");
 
-        Verify<BinaryExpression>("a = ((a & (b | c)) ^ abc(def, ghi))");
+        Verify<AssignmentExpression>("a = ((a & (b | c)) ^ abc(def, ghi))");
     }
 
     [Test]
@@ -254,7 +254,7 @@ public class ParserTests
     {
         ParseStatement("someObject = {a: 1, b: func(arg), c:  abc&d}");
 
-        Verify<BinaryExpression>("someObject = {a: 1, b: func(arg), c: (abc & d)}");
+        Verify<AssignmentExpression>("someObject = {a: 1, b: func(arg), c: (abc & d)}");
     }
 
     [Test]
@@ -262,7 +262,7 @@ public class ParserTests
     {
         ParseStatement("someObject = {a: 1, b: func(arg), c:  abc&d} as Type");
 
-        Verify<BinaryExpression>("someObject = ({a: 1, b: func(arg), c: (abc & d)} as Type)");
+        Verify<AssignmentExpression>("someObject = ({a: 1, b: func(arg), c: (abc & d)} as Type)");
     }
 
     [Test]
@@ -279,6 +279,14 @@ public class ParserTests
         Verify<ImplicitObjectExpression>("{0, 1, 0, 1}");
     }
 
+    [Test]
+    public void ImplicitObject_SingleElement()
+    {
+        ParseStatement("{1}");
+
+        Verify<ImplicitObjectExpression>("{1}");
+    }
+    
     [Test]
     public void ImplicitObject_Complex()
     {
@@ -360,9 +368,9 @@ public class ParserTests
     [Test]
     public void FunctionDeclaration_WithNestedInputFunctionalArg()
     {
-        ParseStatement("someFunc((Bit->Bit)->Bit a) { b = a() }");
+        ParseStatement("someFunc((A->B)->C a) { b = a() }");
 
-        Verify<FunctionDeclaration>("someFunc(((Bit->Bit)->Bit) a) { b = a() }");
+        Verify<FunctionDeclaration>("someFunc(((A->B)->C) a) { b = a() }");
     }
 
     [Test]
@@ -392,25 +400,25 @@ public class ParserTests
     [Test]
     public void TypeExpression_SimpleUnion()
     {
-        ParseStatement("(a,b)");
+        ParseStatement("(A,B)");
 
-        Verify<TypeExpression>("(a, b)");
+        Verify<TypeExpression>("(A, B)");
     }
 
     [Test]
     public void TypeExpression_SimpleFunctionalType()
     {
-        ParseStatement("a->b");
+        ParseStatement("A->B");
 
-        Verify<FunctionTypeExpression>("(a->b)");
+        Verify<FunctionTypeExpression>("(A->B)");
     }
 
     [Test]
     public void TypeExpression_EmptyInput()
     {
-        ParseStatement("()->a");
+        ParseStatement("()->A");
 
-        Verify<FunctionTypeExpression>("(()->a)");
+        Verify<FunctionTypeExpression>("(()->A)");
     }
 
     [Test]
@@ -424,33 +432,41 @@ public class ParserTests
     [Test]
     public void TypeExpression_EmptyOutput()
     {
-        ParseStatement("a->()");
+        ParseStatement("A->()");
 
-        Verify<FunctionTypeExpression>("(a->())");
+        Verify<FunctionTypeExpression>("(A->())");
     }
 
     [Test]
     public void TypeExpression_TwoInputs()
     {
-        ParseStatement("(a,b)->c");
+        ParseStatement("(A,B)->C");
 
-        Verify<FunctionTypeExpression>("((a, b)->c)");
+        Verify<FunctionTypeExpression>("((A, B)->C)");
     }
 
     [Test]
     public void TypeExpression_Associativity()
     {
-        ParseStatement("a->b->c");
+        ParseStatement("A->B->C");
 
-        Verify<FunctionTypeExpression>("(a->(b->c))");
+        Verify<FunctionTypeExpression>("(A->(B->C))");
     }
 
     [Test]
     public void TypeExpression_NestedInputs()
     {
-        ParseStatement("(a,(b->c))->d");
+        ParseStatement("(A,(B->C))->D");
 
-        Verify<FunctionTypeExpression>("((a, (b->c))->d)");
+        Verify<FunctionTypeExpression>("((A, (B->C))->D)");
+    }
+
+    [Test]
+    public void TypeExpression_NestedInputs_2()
+    {
+        ParseStatement("(Bit->Bit)->Bit");
+
+        Verify<FunctionTypeExpression>("((Bit->Bit)->Bit)");
     }
 
     [Test]
@@ -574,7 +590,7 @@ public class ParserTests
         var reader = new LineReader(code);
         var lexer = new Lexer(reader);
         var parser = new Parser(lexer);
-        expression = parser.ParseStatement();
+        expression = parser.Next();
         return expression;
     }
 }

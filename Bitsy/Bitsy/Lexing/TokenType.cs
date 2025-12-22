@@ -3,6 +3,7 @@ namespace Bitsy.Lexing;
 public enum TokenType
 {
     Identifier,
+    Type,
     LeftParenthesis,
     RightParenthesis,
     Assignment,

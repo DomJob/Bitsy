@@ -103,6 +103,7 @@ public class Lexer
             {
                 "return" => new Token(TokenType.Return, initialPos, identifier),
                 "as" => new Token(TokenType.As, initialPos, identifier),
+                _ when IsTypename(identifier) => new Token(TokenType.Type, initialPos, identifier),
                 _ => new Token(TokenType.Identifier, initialPos, identifier)
             };
         }
@@ -113,6 +114,12 @@ public class Lexer
     private bool IsWhitespace(char c)
     {
         return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+    }
+
+    private bool IsTypename(string identifier)
+    {
+        if (identifier.Length == 1) return char.IsUpper(identifier.First());
+        return char.IsUpper(identifier.First()) && identifier.Any(char.IsLower);
     }
 
     private bool IsValidIdentifier(char c)

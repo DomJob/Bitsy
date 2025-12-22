@@ -9,25 +9,25 @@ public class GroupParselet : PrefixParselet
     {
         if (parser.Match(TokenType.RightParenthesis))
         {
-            parser.Consume(TokenType.Arrow);
             var input = new UnionTypeExpression([]);
-            var output = parser.ParseTypeSignature();
+            if (!parser.Match(TokenType.Arrow))
+                return input;
+            var output = (TypeExpression)parser.ParseTypeSignature();
             return new FunctionTypeExpression(input, output);
         }
 
         var expression = parser.ParseExpression();
-        if (expression is NameExpression nameExpr)
+        if (expression is TypeExpression typeExpr)
         {
             if (parser.Match(TokenType.Arrow))
             {
-                var input = nameExpr.ToType();
                 var output = parser.ParseTypeSignature();
-                return new FunctionTypeExpression(input, output);
+                return new FunctionTypeExpression(typeExpr, output);
             }
 
             if (parser.Match(TokenType.Comma))
             {
-                List<TypeExpression> types = [nameExpr.ToType()];
+                List<TypeExpression> types = [typeExpr];
                 while (true)
                 {
                     types.Add(parser.ParseTypeSignature());
@@ -38,8 +38,11 @@ public class GroupParselet : PrefixParselet
                 return new UnionTypeExpression(types);
             }
         }
+        else
+        {
+            parser.Consume(TokenType.RightParenthesis);
+        }
 
-        parser.Consume(TokenType.RightParenthesis);
         return expression;
     }
 

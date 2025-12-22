@@ -2,21 +2,28 @@ namespace Bitsy.Analyzing;
 
 public class TypeException : Exception
 {
-    public TypeException(string message) : base(message) { }
+    public TypeException(string message) : base(message)
+    {
+    }
 }
 
 public class UnknownSymbolException : Exception
 {
-    public UnknownSymbolException(string message) : base(message) { }
+    public UnknownSymbolException(string message) : base(message)
+    {
+    }
 }
 
 public class UnknownTypeException : Exception
 {
-    public UnknownTypeException(string message) : base(message) { }
+    public UnknownTypeException(string message) : base(message)
+    {
+    }
 }
-
 
 public class WrongTypeException : Exception
 {
-    public WrongTypeException(string message) : base(message) { }
+    public WrongTypeException(string message) : base(message)
+    {
+    }
 }

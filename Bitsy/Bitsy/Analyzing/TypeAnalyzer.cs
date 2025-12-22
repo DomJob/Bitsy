@@ -1,15 +1,15 @@
-using Bitsy.Analyzing.Types;
-using Bitsy.Lexing;
 using Bitsy.Parsing;
-using Bitsy.Parsing.Expressions;
 
 namespace Bitsy.Analyzing;
 
 public class TypeAnalyzer
 {
-    private TypeAnalyzer? parent = null;
-    
-    private TypeAnalyzer(TypeAnalyzer parent) => this.parent = parent;
+    private TypeAnalyzer? parent;
+
+    private TypeAnalyzer(TypeAnalyzer parent)
+    {
+        this.parent = parent;
+    }
 
     public TypeAnalyzer()
     {
@@ -22,9 +22,9 @@ public class TypeAnalyzer
     public void LoadExpression(Expression expression)
     {
         // Constant binding
-        
+
         // Function declaration
-        
+
         // Type declaration
     }
 
@@ -36,12 +36,10 @@ public class TypeAnalyzer
     private Type ExpressionToType(Expression expression)
     {
         // NameExpression / SimpleTypeExpression
-        
+
         // FunctionTypeExpression
-        
+
         // UnionTypeExpression
         return null;
     }
-    
-    
 }
