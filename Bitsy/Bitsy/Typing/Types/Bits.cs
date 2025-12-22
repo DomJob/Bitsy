@@ -1,8 +1,8 @@
-namespace Bitsy.Analyzing.Types;
+namespace Bitsy.Typing.Types;
 
 public class Bits : Type
 {
-    public static Bits Instance = new();
+    public static readonly Bits Instance = new();
 
     private Bits()
     {

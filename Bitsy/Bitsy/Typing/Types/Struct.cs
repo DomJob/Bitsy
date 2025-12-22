@@ -1,9 +1,9 @@
-namespace Bitsy.Analyzing.Types;
+namespace Bitsy.Typing.Types;
 
 public record Field
 {
-    public string Name;
-    public Type Type;
+    public readonly string Name;
+    public readonly Type Type;
 
     public Field(string name, Type type)
     {

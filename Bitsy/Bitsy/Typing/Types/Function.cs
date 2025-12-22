@@ -1,4 +1,4 @@
-namespace Bitsy.Analyzing.Types;
+namespace Bitsy.Typing.Types;
 
 public class Function : Type
 {

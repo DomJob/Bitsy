@@ -1,4 +1,4 @@
-namespace Bitsy.Analyzing;
+namespace Bitsy.Typing;
 
 public class TypeException : Exception
 {

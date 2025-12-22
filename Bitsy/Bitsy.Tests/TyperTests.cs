@@ -1,9 +1,9 @@
-using Bitsy.Analyzing;
-using Bitsy.Analyzing.Types;
 using Bitsy.Lexing;
 using Bitsy.Parsing;
 using Bitsy.Reading;
-using Type = Bitsy.Analyzing.Type;
+using Bitsy.Typing;
+using Bitsy.Typing.Types;
+using Type = Bitsy.Typing.Type;
 
 namespace Bitsy;
 

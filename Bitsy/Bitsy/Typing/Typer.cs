@@ -1,9 +1,9 @@
-using Bitsy.Analyzing.Types;
 using Bitsy.Lexing;
 using Bitsy.Parsing;
 using Bitsy.Parsing.Expressions;
+using Bitsy.Typing.Types;
 
-namespace Bitsy.Analyzing;
+namespace Bitsy.Typing;
 
 public class Typer
 {
