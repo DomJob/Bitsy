@@ -417,6 +417,20 @@ public class TyperTests
                              """)
             .Then.Expression("factorial").HasType<Function>("(Number->Number)");
     }
+    
+    [Test]
+    public void BindRecursiveFunction_CantInferReturn()
+    {
+        When.ReadingStatementThrows<CantInferFunctionTypeException>("brokenFunc(Bit a) { return brokenFunc(1) }");
+    }
+    
+    [Test]
+    public void BindRecursiveFunction_InferableType()
+    {
+        When.ReadStatement("identFunc(Bit a) { return 0 ^ identFunc(1) }")
+            .Then.Expression("identFunc").HasType<Function>("(Bit->Bit)");
+    }
+
 
     internal class TestScenario
     {

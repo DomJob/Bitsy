@@ -55,3 +55,10 @@ public class WrongCallArgumentException : TypeException
     {
     }
 }
+
+public class CantInferFunctionTypeException : TypeException
+{
+    public CantInferFunctionTypeException(string message) : base(message)
+    {
+    }
+}
