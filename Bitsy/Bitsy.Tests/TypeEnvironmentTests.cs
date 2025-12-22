@@ -163,6 +163,63 @@ public class TypeEnvironmentTests
                            """)
             .Then.Expression("{b1: 0, zz: 1} as SomeType").Throws<WrongTypeException>();
     }
+    
+    [Test]
+    public void DefiningCustomType_AndUsingIt_InFunction()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadStatement("someFunc(SomeType obj) { return 1 }")
+            .Then.Expression("someFunc").HasType<Function>("(SomeType->Bit)");
+    }
+    
+    [Test]
+    public void DefiningCustomType_AndUsingIt_InFunction2()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadStatement("someFunc(SomeType obj) { return {0,1} as SomeType }")
+            .Then.Expression("someFunc").HasType<Function>("(SomeType->SomeType)");
+    }
+    
+    [Test]
+    public void DefiningCustomType_WithOtherCustomTypeInside()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            Bit b2
+                           }
+                           """)
+            .And.ReadStatement("""
+                               SomeType2 {
+                                Bit c1
+                                Bit c2
+                                SomeType c3
+                               }
+                               """)
+            .Then.Expression("1 as SomeType2").HasType<Struct>("SomeType2");
+    }
+    
+    [Test]
+    public void DefiningRecursiveType()
+    {
+        When.ReadStatement("""
+                           SomeType {
+                            Bit b1
+                            SomeType more
+                           }
+                           """)
+            .Then.Expression("1 as SomeType").HasType<Struct>("SomeType");
+    }
 
     internal class TestScenario
     {

@@ -47,15 +47,14 @@ public class TypeEnvironment
 
     private void ReadTypeDeclaration(TypeDeclaration type)
     {
-        var fields = new List<Field>();
-
+        var newType = new Struct(type.Name.Literal, []);
+        RegisterType(type.Name.Literal, newType);
+        
         foreach (var (typeExpr, nameExpr) in type.Body)
         {
             var typeInstance = ResolveTypeExpression(typeExpr);
-            fields.Add(new Field(name: nameExpr.Literal, type: typeInstance));
+            newType.Fields.Add(new Field(name: nameExpr.Literal, type: typeInstance));
         }
-        
-        RegisterType(type.Name.Literal,  new Struct(type.Name.Literal, fields));
     }
 
     private void ReadFunctionDeclaration(FunctionDeclaration function)
