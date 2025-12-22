@@ -152,6 +152,30 @@ public class TyperTests
             .Then
             .Expression("someFunc").HasType<Function>("(Bit->Bit)");
     }
+    
+    [Test]
+    public void BindingFunctionWithFunctionalArg()
+    {
+        When.ReadStatement("someFunc((Bit->Bit) a) { return a(1) }")
+            .Then
+            .Expression("someFunc").HasType<Function>("((Bit->Bit)->Bit)");
+    }
+    
+    [Test]
+    public void BindingFunctionWithFunctionalArgThatItselfHasNoArg()
+    {
+        When.ReadStatement("someFunc(()->Bit a) { return a() }")
+            .Then
+            .Expression("someFunc").HasType<Function>("((()->Bit)->Bit)");
+    }
+    
+    [Test]
+    public void BindingFunctionWithUnionFunctionalArg()
+    {
+        When.ReadStatement("someFunc((Bit,Bit)->Bit a) { return a(1,0) }")
+            .Then
+            .Expression("someFunc").HasType<Function>("(((Bit, Bit)->Bit)->Bit)");
+    }
 
     [Test]
     public void BindingFunctionThatReturnsSymbolDefinedInFunc()

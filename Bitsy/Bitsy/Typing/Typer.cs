@@ -89,25 +89,22 @@ public class Typer
 
     private Type ResolveTypeExpression(TypeExpression expression)
     {
-        Type? foundType = null;
-
         switch (expression)
         {
             case SimpleTypeExpression simpleType:
-                availableTypes.TryGetValue(simpleType.Literal, out foundType);
+                if (availableTypes.TryGetValue(simpleType.Literal, out var foundType))
+                    return foundType;
                 break;
             case FunctionTypeExpression functionTypeExpression:
-                // TODO
-                break;
+                var inputType = ResolveTypeExpression(functionTypeExpression.Input);
+                var outputType = ResolveTypeExpression(functionTypeExpression.Output);
+                return new Function(inputType, outputType);
             case UnionTypeExpression unionTypeExpression:
-                // TODO
-                break;
+                return new Union(unionTypeExpression.Names.Select(ResolveTypeExpression).ToList());
         }
 
-        if (foundType == null)
-            return parent?.ResolveTypeExpression(expression) ??
-                   throw new UnknownTypeException("Unknown type: " + expression);
-        return foundType;
+        if (parent == null) throw new UnknownTypeException("Unknown type: " + expression);
+        return parent.ResolveTypeExpression(expression);
     }
 
     public Type ResolveType(Expression expression)
@@ -163,7 +160,7 @@ public class Typer
 
         if (argumentsUsed != argumentsExpected)
             throw new WrongCallArgumentException(
-                $"Target expression takes {argumentsUsed} arguments, trying to call with {argumentsExpected}");
+                $"Target expression takes {argumentsExpected} arguments, trying to call with {argumentsUsed}");
 
         for (var i = 0; i < argumentsUsed; i++) AssertTypeIs(call.Arguments[i], functionType.GetArg(i));
 
