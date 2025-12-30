@@ -54,13 +54,20 @@ public class Typer
     private void ReadTypeDeclaration(TypeDeclaration type)
     {
         var newType = new Struct(type.Name.Literal, []);
-        RegisterType(type.Name.Literal, newType);
+        var subEnv = new Typer(this);
+        foreach (var template in type.Templates)
+            if(template is SimpleTypeExpression simple)
+                subEnv.RegisterType(simple.Name.Literal, new Unknown());
+        
+        subEnv.RegisterType(type.Name.Literal, newType);
 
         foreach (var (typeExpr, nameExpr) in type.Body)
         {
-            var typeInstance = ResolveTypeExpression(typeExpr);
+            var typeInstance = subEnv.ResolveTypeExpression(typeExpr);
             newType.Fields.Add(new Field(nameExpr.Literal, typeInstance));
         }
+        
+        RegisterType(type.Name.Literal, newType);
     }
 
     private void ReadFunctionDeclaration(FunctionDeclaration function)
@@ -76,7 +83,7 @@ public class Typer
         }
 
         var inputTypes = inputs.Count == 1 ? inputs[0] : new Union(inputs);
-        var functionType = new Function(inputTypes, Unknown.Instance);
+        var functionType = new Function(inputTypes, new Unknown());
         RegisterSymbol(function.Name.Literal, functionType);
         
         Type returnType = new Union([]);
@@ -176,7 +183,7 @@ public class Typer
         if (possibleTargets.Any())
         {
             var typedBody = obj.Body.Select(field => new Field(field.Item1.Literal, ResolveType(field.Item2))).ToList();
-            possibleTargets = possibleTargets.Where(s => s.Fields.SequenceEqual(typedBody)).ToList();
+            possibleTargets = possibleTargets.Where(s => s.FieldsEqual(typedBody)).ToList();
 
             if (possibleTargets.Count == 1) return possibleTargets.First();
             if (possibleTargets.Count > 1)
@@ -189,7 +196,7 @@ public class Typer
     private void AssertTypeIs(Expression expression, Type expectedType)
     {
         var actual = ResolveType(expression);
-        if (actual != Unknown.Instance && actual != expectedType)
+        if(!Type.Equals(expectedType, actual))
             throw new WrongTypeException("Expected expression of type " + expectedType + ", got " + actual);
     }
 
@@ -210,7 +217,7 @@ public class Typer
                 throw new WrongTypeException($"Unknown field accessor {nameExpr.Literal}");
             var actualType = ResolveType(expr);
 
-            if (expectedType != actualType)
+            if (!Type.AreEqual(expectedType, actualType))
                 throw new WrongTypeException("Wrong type when resolving explicit object instantiation");
         }
     }

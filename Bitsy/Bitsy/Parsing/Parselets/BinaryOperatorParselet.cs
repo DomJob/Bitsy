@@ -18,8 +18,8 @@ public class BinaryOperatorParselet : InfixParselet
         {
             if (left is not SimpleTypeExpression typeExpr)
                 throw new ParserException("Expected type, got " + left.GetType().Name);
-
-            return new SimpleTypeExpression(typeExpr.Name, parser.ParseTemplates(true));
+            typeExpr.Templates.AddRange(parser.ParseTemplates(true));
+            return typeExpr;
         }
 
         if (token.Type == TokenType.Arrow)

@@ -348,6 +348,45 @@ public class TyperTests
     }
 
     [Test]
+    public void DefineTemplatedTypeAndUseIt_Inferred()
+    {
+        When.ReadStatement("""
+                           Tuple<T> {
+                            T first
+                            T second
+                           }
+                           """)
+            .And.ReadStatement("a = {first: 0, second: 1}")
+            .Then.Expression("a").HasType<Struct>("Tuple<Bit>");
+    }
+    
+    [Test]
+    public void DefineTemplatedTypeAndUseIt_Explicit()
+    {
+        When.ReadStatement("""
+                           Tuple<T> {
+                            T first
+                            T second
+                           }
+                           """)
+            .And.ReadStatement("a = {first: 0, second: 1} as Tuple<Bit>")
+            .Then.Expression("a").HasType<Struct>("Tuple<Bit>");
+    }
+    
+    [Test]
+    public void DefineTemplatedTypeAndUseIt_ImplicitCast()
+    {
+        When.ReadStatement("""
+                           Tuple<T> {
+                            T first
+                            T second
+                           }
+                           """)
+            .And.ReadStatement("a = {0, 1} as Tuple<Bit>")
+            .Then.Expression("a").HasType<Struct>("Tuple<Bit>");
+    }
+
+    [Test]
     public void DefiningRecursiveType()
     {
         When.ReadStatement("""

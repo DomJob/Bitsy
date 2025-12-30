@@ -2,19 +2,19 @@ namespace Bitsy.Typing.Types;
 
 public class Unknown : Type
 {
-    public static Unknown Instance = new();
-
-    private Unknown()
+    internal Type? inferredType = null;
+    
+    public Unknown()
     {
     }
 
     public override bool Equals(Type other)
     {
-        return other is Unknown;
+        return inferredType?.Equals(other) ?? true;
     }
 
     public override string ToString()
     {
-        return "UNKNOWN";
+        return inferredType == null ? "?" : inferredType.ToString()!;
     }
 }

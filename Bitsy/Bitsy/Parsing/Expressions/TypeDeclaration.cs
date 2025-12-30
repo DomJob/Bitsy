@@ -4,14 +4,16 @@ namespace Bitsy.Parsing.Expressions;
 
 public class TypeDeclaration : Expression
 {
-    public TypeDeclaration(TypeExpression name, List<(TypeExpression, NameExpression)> body)
+    public TypeDeclaration(SimpleTypeExpression name, List<(TypeExpression, NameExpression)> body)
     {
         Name = name;
         Body = body;
     }
 
-    public TypeExpression Name { get; }
-
+    public SimpleTypeExpression Name { get; }
+    
+    public List<TypeExpression> Templates => Name.Templates; 
+    
     public List<(TypeExpression, NameExpression)> Body { get; }
 
     public override Position Position => Name.Position;

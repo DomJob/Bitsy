@@ -2,7 +2,7 @@ namespace Bitsy.Typing.Types;
 
 public class Bit : Type
 {
-    public static Bit Instance = new();
+    public static readonly Bit Instance = new();
 
     private Bit()
     {

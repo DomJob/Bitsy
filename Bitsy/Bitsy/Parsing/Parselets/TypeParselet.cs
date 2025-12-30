@@ -21,7 +21,9 @@ public class TypeParselet : PrefixParselet
 
         if (!parser.Match(TokenType.LeftBrace))
             return left;
-        return new TypeDeclaration(left, ParseBody(parser));
+        if (left is not SimpleTypeExpression simple)
+            throw new ParserException("Expected simple type, got " + left);
+        return new TypeDeclaration(simple, ParseBody(parser));
     }
 
     private List<(TypeExpression, NameExpression)> ParseBody(Parser parser)

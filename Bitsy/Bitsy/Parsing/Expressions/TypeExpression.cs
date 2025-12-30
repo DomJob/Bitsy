@@ -18,6 +18,8 @@ public class SimpleTypeExpression : TypeExpression
     public Token Name { get; }
     public List<TypeExpression> Templates { get; }
 
+    public new string Literal => Name.Literal;
+
     public override Position Position => Name.Position;
 
     public override string ToString()
